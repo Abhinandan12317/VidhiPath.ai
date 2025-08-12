@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .verify-otp-container {
+    max-width: 500px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    padding: 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-top: 5rem;
+  }
+  .verify-otp-container h2 {
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+</style>
+
+<div class="container">
+  <div class="verify-otp-container">
+    <h2>Email Verification</h2>
+    <form method="post">
+      <div class="mb-3">
+        <label for="otp" class="form-label">Enter the 6-digit OTP sent to your email</label>
+        <input
+          type="text"
+          class="form-control form-control-lg"
+          id="otp"
+          name="otp"
+          maxlength="6"
+          required
+          placeholder="123456"
+        >
+      </div>
+      <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary btn-lg">Verify OTP</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

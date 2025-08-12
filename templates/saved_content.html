@@ -1,0 +1,489 @@
+{% extends "base.html" %}
+
+{% block title %}Saved Content - VidhiPath.ai{% endblock %}
+
+{% block extra_css %}
+<style>
+    .content-tabs {
+        display: flex;
+        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 2rem;
+        overflow-x: auto;
+    }
+
+    .tab-button {
+        background: none;
+        border: none;
+        padding: 1rem 2rem;
+        cursor: pointer;
+        font-weight: 600;
+        color: #6b7280;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .tab-button.active {
+        color: #1e40af;
+        border-bottom-color: #1e40af;
+    }
+
+    .tab-button:hover {
+        color: #1e40af;
+        background: #f8fafc;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .content-item {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+        border-left: 4px solid #e5e7eb;
+    }
+
+    .content-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .content-item.chat { border-left-color: #1e40af; }
+    .content-item.document { border-left-color: #059669; }
+    .content-item.analysis { border-left-color: #d97706; }
+
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .content-title {
+        font-weight: 600;
+        color: #374151;
+        margin: 0 0 0.5rem 0;
+        font-size: 1.1rem;
+    }
+
+    .content-meta {
+        color: #6b7280;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .content-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        background: none;
+        border: 1px solid #d1d5db;
+        padding: 0.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+        color: #6b7280;
+        transition: all 0.3s ease;
+        font-size: 0.875rem;
+    }
+
+    .action-btn:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+    }
+
+    .action-btn.delete:hover {
+        background: #fee2e2;
+        border-color: #ef4444;
+        color: #ef4444;
+    }
+
+    .content-preview {
+        color: #6b7280;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+
+    .content-preview.expanded {
+        max-height: none;
+    }
+
+    .expand-btn {
+        background: none;
+        border: none;
+        color: #1e40af;
+        cursor: pointer;
+        font-size: 0.875rem;
+        padding: 0;
+        text-decoration: underline;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-valid {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-issues {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-checked {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6b7280;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #d1d5db;
+        margin-bottom: 1rem;
+    }
+
+    .chat-message {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border-radius: 8px;
+        background: #f8fafc;
+    }
+
+    .chat-message.user {
+        background: #dbeafe;
+        margin-left: 2rem;
+    }
+
+    .chat-message.bot {
+        background: #f0fdf4;
+        margin-right: 2rem;
+    }
+
+    .message-label {
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .message-label.user { color: #1e40af; }
+    .message-label.bot { color: #059669; }
+
+    @media (max-width: 768px) {
+        .content-tabs {
+            gap: 0;
+        }
+        
+        .tab-button {
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .content-item {
+            padding: 1rem;
+        }
+        
+        .content-header {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .content-actions {
+            align-self: flex-end;
+        }
+        
+        .content-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1 class="card-title">
+            <i class="fas fa-bookmark"></i> Saved Content
+        </h1>
+    </div>
+
+    <p style="color: #6b7280; margin-bottom: 2rem;">
+        Access all your saved legal content including chat conversations, document validations, and case analyses.
+    </p>
+
+    <div class="content-tabs">
+        <button class="tab-button active" onclick="switchTab('chats')">
+            <i class="fas fa-comments"></i>
+            Chat History ({{ chat_history|length }})
+        </button>
+        <button class="tab-button" onclick="switchTab('documents')">
+            <i class="fas fa-file-check"></i>
+            Documents ({{ documents|length }})
+        </button>
+        <button class="tab-button" onclick="switchTab('analyses')">
+            <i class="fas fa-chart-line"></i>
+            Case Analyses ({{ case_analyses|length }})
+        </button>
+    </div>
+
+    <!-- Chat History Tab -->
+    <div id="chatsTab" class="tab-content active">
+        {% if chat_history %}
+            {% for chat in chat_history %}
+            <div class="content-item chat">
+                <div class="content-header">
+                    <div>
+                        <h3 class="content-title">Legal Conversation</h3>
+                        <div class="content-meta">
+                            <span><i class="fas fa-calendar"></i> {{ chat.timestamp.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                        </div>
+                    </div>
+                    <div class="content-actions">
+                        <button class="action-btn" onclick="expandChat({{ chat.chat_id }})" title="View full conversation">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button class="action-btn delete" onclick="deleteChat({{ chat.chat_id }})" title="Delete conversation">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chat-message user">
+                    <div class="message-label user">Your Question:</div>
+                    <div>{{ chat.message[:200] }}{% if chat.message|length > 200 %}...{% endif %}</div>
+                </div>
+
+                <div class="chat-message bot">
+                    <div class="message-label bot">AI Response:</div>
+                    <div>{{ chat.response[:200] }}{% if chat.response|length > 200 %}...{% endif %}</div>
+                </div>
+
+                {% if chat.message|length > 200 or chat.response|length > 200 %}
+                <button class="expand-btn" onclick="expandChat({{ chat.chat_id }})">
+                    View full conversation
+                </button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-comments"></i>
+                <h3>No Chat History</h3>
+                <p>Start a conversation with our legal assistant to see your chat history here.</p>
+                <a href="{{ url_for('chatbot') }}" class="btn btn-primary" style="margin-top: 1rem;">
+                    <i class="fas fa-play"></i> Start Legal Chat
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Documents Tab -->
+    <div id="documentsTab" class="tab-content">
+        {% if documents %}
+            {% for doc in documents %}
+            <div class="content-item document">
+                <div class="content-header">
+                    <div>
+                        <h3 class="content-title">{{ doc.filename }}</h3>
+                        <div class="content-meta">
+                            <span><i class="fas fa-calendar"></i> {{ doc.upload_time.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                            <span class="status-badge status-{{ doc.status }}">
+                                <i class="fas fa-check-circle"></i> {{ doc.status.title() }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="content-actions">
+                        <button class="action-btn" onclick="viewDocument({{ doc.document_id }})" title="View details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="action-btn delete" onclick="deleteDocument({{ doc.document_id }})" title="Delete document">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                {% if doc.extracted_summary %}
+                <div class="content-preview">
+                    <strong>Summary:</strong> {{ doc.extracted_summary[:300] }}{% if doc.extracted_summary|length > 300 %}...{% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-file-check"></i>
+                <h3>No Documents</h3>
+                <p>Upload and validate legal documents to see them here.</p>
+                <a href="{{ url_for('document_checker') }}" class="btn btn-secondary" style="margin-top: 1rem;">
+                    <i class="fas fa-upload"></i> Check Document
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Case Analyses Tab -->
+    <div id="analysesTab" class="tab-content">
+        {% if case_analyses %}
+            {% for analysis in case_analyses %}
+            <div class="content-item analysis">
+                <div class="content-header">
+                    <div>
+                        <h3 class="content-title">{{ analysis.inputs.case_type.title() }} Case Analysis</h3>
+                        <div class="content-meta">
+                            <span><i class="fas fa-calendar"></i> {{ analysis.timestamp.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                            <span><i class="fas fa-map-marker-alt"></i> {{ analysis.inputs.location.title() }}</span>
+                        </div>
+                    </div>
+                    <div class="content-actions">
+                        <button class="action-btn" onclick="viewAnalysis({{ analysis.analysis_id }})" title="View full analysis">
+                            <i class="fas fa-chart-bar"></i>
+                        </button>
+                        <button class="action-btn delete" onclick="deleteAnalysis({{ analysis.analysis_id }})" title="Delete analysis">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="content-preview">
+                    <div style="margin-bottom: 0.5rem;">
+                        <strong>Success Probability:</strong> {{ analysis.results.success_probability }}
+                    </div>
+                    <div style="margin-bottom: 0.5rem;">
+                        <strong>Estimated Duration:</strong> {{ analysis.results.estimated_duration }}
+                    </div>
+                    <div>
+                        <strong>Description:</strong> {{ analysis.inputs.description[:200] }}{% if analysis.inputs.description|length > 200 %}...{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-chart-line"></i>
+                <h3>No Case Analyses</h3>
+                <p>Analyze legal cases to see predictions and insights here.</p>
+                <a href="{{ url_for('case_prediction') }}" class="btn" style="background: #d97706; color: white; margin-top: 1rem;">
+                    <i class="fas fa-crystal-ball"></i> Predict Case
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card" style="margin-top: 2rem;">
+    <h3 style="color: #1e40af; margin-bottom: 1rem;">
+        <i class="fas fa-download"></i> Export Your Data
+    </h3>
+    <p style="color: #6b7280; margin-bottom: 1.5rem;">
+        Download your saved content for offline access or record keeping.
+    </p>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <button onclick="exportData('chats')" class="btn btn-outline">
+            <i class="fas fa-file-export"></i> Export Chat History
+        </button>
+        <button onclick="exportData('documents')" class="btn btn-outline">
+            <i class="fas fa-file-export"></i> Export Document Reports
+        </button>
+        <button onclick="exportData('analyses')" class="btn btn-outline">
+            <i class="fas fa-file-export"></i> Export Case Analyses
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchTab(tab) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+    
+    // Update tab content
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    document.getElementById(tab + 'Tab').classList.add('active');
+}
+
+function expandChat(chatId) {
+    // This would typically open a modal or navigate to a detailed view
+    alert('Feature coming soon: View full conversation details');
+}
+
+function viewDocument(docId) {
+    alert('Feature coming soon: View document validation details');
+}
+
+function viewAnalysis(analysisId) {
+    alert('Feature coming soon: View complete case analysis');
+}
+
+function deleteChat(chatId) {
+    if (confirm('Are you sure you want to delete this conversation? This action cannot be undone.')) {
+        // Implementation would make API call to delete
+        alert('Feature coming soon: Delete conversation');
+    }
+}
+
+function deleteDocument(docId) {
+    if (confirm('Are you sure you want to delete this document record? This action cannot be undone.')) {
+        // Implementation would make API call to delete
+        alert('Feature coming soon: Delete document record');
+    }
+}
+
+function deleteAnalysis(analysisId) {
+    if (confirm('Are you sure you want to delete this case analysis? This action cannot be undone.')) {
+        // Implementation would make API call to delete
+        alert('Feature coming soon: Delete case analysis');
+    }
+}
+
+function exportData(type) {
+    // This would generate and download the data
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    const filename = `vidhipath-${type}-${timestamp}.json`;
+    
+    // For now, just show a message
+    alert(`Feature coming soon: Export ${type} data as ${filename}`);
+    
+    // Implementation would:
+    // 1. Fetch the data from API
+    // 2. Format as JSON or CSV
+    // 3. Create download link
+    // 4. Trigger download
+}
+
+// Auto-refresh content periodically
+setInterval(function() {
+    // Could refresh content counts or check for new items
+    // Implementation would make API calls to get updated counts
+}, 30000); // Every 30 seconds
+</script>
+{% endblock %}

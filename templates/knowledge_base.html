@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+
+{% block title %}Legal Knowledge Repository - VidhiPath.ai{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-section {
+        background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+        color: white;
+        padding: 3rem 2rem;
+        margin: -2rem -1.5rem 2rem -1.5rem;
+        border-radius: 0 0 20px 20px;
+        text-align: center;
+    }
+
+    .search-box {
+        max-width: 600px;
+        margin: 2rem auto 0;
+        position: relative;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 1rem 1rem 1rem 3rem;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-input:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6b7280;
+        font-size: 1.25rem;
+    }
+
+    .category-filters {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+    }
+
+    .category-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+    .category-btn:hover,
+    .category-btn.active {
+        background: white;
+        color: #1e40af;
+        border-color: white;
+    }
+
+    .faq-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .faq-item {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border-left: 4px solid #e5e7eb;
+    }
+
+    .faq-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .faq-item.rti { border-left-color: #1e40af; }
+    .faq-item.fir { border-left-color: #dc2626; }
+    .faq-item.property { border-left-color: #059669; }
+    .faq-item.women-child { border-left-color: #d97706; }
+
+    .faq-question {
+        padding: 1.5rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: none;
+        border: none;
+        width: 100%;
+        text-align: left;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .faq-question:hover {
+        background: #f8fafc;
+    }
+
+    .faq-answer {
+        padding: 0 1.5rem 1.5rem;
+        color: #6b7280;
+        line-height: 1.7;
+        display: none;
+        border-top: 1px solid #f3f4f6;
+        background: #f8fafc;
+    }
+
+    .faq-answer.show {
+        display: block;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            max-height: 0;
+        }
+        to {
+            opacity: 1;
+            max-height: 200px;
+        }
+    }
+
+    .category-badge {
+        display: inline-block;
+        background: #f3f4f6;
+        color: #6b7280;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .category-badge.rti { background: #dbeafe; color: #1e40af; }
+    .category-badge.fir { background: #fee2e2; color: #dc2626; }
+    .category-badge.property { background: #d1fae5; color: #059669; }
+    .category-badge.women-child { background: #fef3c7; color: #d97706; }
+
+    .no-results {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6b7280;
+    }
+
+    .expand-icon {
+        transition: transform 0.3s ease;
+        color: #6b7280;
+    }
+
+    .expand-icon.rotated {
+        transform: rotate(180deg);
+    }
+
+    @media (max-width: 768px) {
+        .search-section {
+            padding: 2rem 1rem;
+            margin: -2rem -1rem 2rem -1rem;
+        }
+        
+        .category-filters {
+            gap: 0.5rem;
+        }
+        
+        .category-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .faq-question {
+            padding: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        .faq-answer {
+            padding: 0 1rem 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-section">
+    <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">
+        <i class="fas fa-book"></i> Legal Knowledge Repository
+    </h1>
+    <p style="font-size: 1.2rem; opacity: 0.9; margin-bottom: 0;">
+        Comprehensive legal information and frequently asked questions about Indian law
+    </p>
+    
+    <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input 
+            type="text" 
+            id="searchInput" 
+            class="search-input" 
+            placeholder="Search legal topics, questions, or keywords..."
+            oninput="searchFAQs()"
+        >
+    </div>
+    
+    <div class="category-filters">
+        <button class="category-btn active" onclick="filterByCategory('all')">
+            All Topics
+        </button>
+        {% for category in categories %}
+        <button class="category-btn" onclick="filterByCategory('{{ category.lower().replace(' ', '-') }}')">
+            {{ category }}
+        </button>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="faq-grid" id="faqGrid">
+    {% for faq in faqs %}
+    <div class="faq-item {{ faq.category.lower().replace(' ', '-').replace('&', '').replace(' ', '-') }}" data-category="{{ faq.category.lower().replace(' ', '-') }}" data-search="{{ (faq.question + ' ' + faq.answer).lower() }}">
+        <div class="category-badge {{ faq.category.lower().replace(' ', '-').replace('&', '').replace(' ', '-') }}">
+            {{ faq.category }}
+        </div>
+        
+        <button class="faq-question" onclick="toggleFAQ(this)">
+            <span>{{ faq.question }}</span>
+            <i class="fas fa-chevron-down expand-icon"></i>
+        </button>
+        
+        <div class="faq-answer">
+            {{ faq.answer }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="no-results" id="noResults" style="display: none;">
+    <i class="fas fa-search" style="font-size: 3rem; color: #d1d5db; margin-bottom: 1rem;"></i>
+    <h3 style="color: #6b7280; margin-bottom: 0.5rem;">No results found</h3>
+    <p style="margin: 0;">Try different keywords or browse all categories</p>
+</div>
+
+{% if session.user_id %}
+<div class="card" style="margin-top: 3rem;">
+    <h3 style="color: #1e40af; margin-bottom: 1rem;">
+        <i class="fas fa-question-circle"></i> Need More Help?
+    </h3>
+    <p style="color: #6b7280; margin-bottom: 1.5rem;">
+        Can't find what you're looking for? Our AI-powered legal assistant can provide personalized guidance for your specific questions.
+    </p>
+    <div style="text-align: center;">
+        <a href="{{ url_for('chatbot') }}" class="btn btn-primary" style="margin-right: 1rem;">
+            <i class="fas fa-comments"></i> Ask Legal Assistant
+        </a>
+        <a href="{{ url_for('feedback') }}" class="btn btn-outline">
+            <i class="fas fa-envelope"></i> Submit Feedback
+        </a>
+    </div>
+</div>
+{% else %}
+<div class="card" style="margin-top: 3rem; text-align: center;">
+    <h3 style="color: #1e40af; margin-bottom: 1rem;">
+        <i class="fas fa-rocket"></i> Get Personalized Legal Assistance
+    </h3>
+    <p style="color: #6b7280; margin-bottom: 1.5rem;">
+        Sign up for free to access our AI-powered legal chatbot, document checker, case prediction tools, and more personalized features.
+    </p>
+    <div>
+        <a href="{{ url_for('signup') }}" class="btn btn-primary" style="margin-right: 1rem;">
+            <i class="fas fa-user-plus"></i> Sign Up Free
+        </a>
+        <a href="{{ url_for('login') }}" class="btn btn-outline">
+            <i class="fas fa-sign-in-alt"></i> Login
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<div class="card" style="margin-top: 2rem;">
+    <h3 style="color: #1e40af; margin-bottom: 1rem;">
+        <i class="fas fa-info-circle"></i> About Our Legal Knowledge Base
+    </h3>
+    
+    <div class="grid grid-2">
+        <div>
+            <h4 style="color: #059669; margin-bottom: 0.5rem;">Coverage Areas</h4>
+            <ul style="color: #6b7280; margin: 0; padding-left: 1.5rem;">
+                <li>Right to Information (RTI) procedures</li>
+                <li>FIR filing and police procedures</li>
+                <li>Property registration and disputes</li>
+                <li>Women and child rights protection</li>
+                <li>Consumer rights and complaints</li>
+                <li>Employment and labor laws</li>
+            </ul>
+        </div>
+        
+        <div>
+            <h4 style="color: #d97706; margin-bottom: 0.5rem;">Information Quality</h4>
+            <ul style="color: #6b7280; margin: 0; padding-left: 1.5rem;">
+                <li>Based on current Indian legal framework</li>
+                <li>Regularly updated with law changes</li>
+                <li>Reviewed by legal experts</li>
+                <li>Simplified for general understanding</li>
+                <li>Includes practical guidance and steps</li>
+                <li>References to relevant acts and sections</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; margin-top: 1rem; border-radius: 0 8px 8px 0;">
+        <p style="margin: 0; color: #92400e;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Disclaimer:</strong> This information is for general guidance only and should not be considered as legal advice. 
+            For specific legal matters, always consult with a qualified lawyer.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentFilter = 'all';
+let allFAQs = [];
+
+// Store all FAQs for filtering
+document.addEventListener('DOMContentLoaded', function() {
+    allFAQs = Array.from(document.querySelectorAll('.faq-item'));
+});
+
+function toggleFAQ(button) {
+    const answer = button.nextElementSibling;
+    const icon = button.querySelector('.expand-icon');
+    
+    // Close all other FAQs
+    document.querySelectorAll('.faq-answer.show').forEach(otherAnswer => {
+        if (otherAnswer !== answer) {
+            otherAnswer.classList.remove('show');
+            otherAnswer.previousElementSibling.querySelector('.expand-icon').classList.remove('rotated');
+        }
+    });
+    
+    // Toggle current FAQ
+    answer.classList.toggle('show');
+    icon.classList.toggle('rotated');
+}
+
+function filterByCategory(category) {
+    currentFilter = category;
+    
+    // Update active button
+    document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Filter FAQs
+    filterFAQs();
+}
+
+function searchFAQs() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    
+    if (searchTerm.length > 0) {
+        // Perform search via API
+        fetch(`/api/search-faqs?q=${encodeURIComponent(searchTerm)}&category=${currentFilter !== 'all' ? currentFilter : ''}`)
+            .then(response => response.json())
+            .then(results => {
+                displaySearchResults(results);
+            })
+            .catch(error => {
+                console.error('Search error:', error);
+                filterFAQs(); // Fallback to local filtering
+            });
+    } else {
+        filterFAQs();
+    }
+}
+
+function displaySearchResults(results) {
+    const faqGrid = document.getElementById('faqGrid');
+    const noResults = document.getElementById('noResults');
+    
+    // Hide all FAQs first
+    allFAQs.forEach(faq => faq.style.display = 'none');
+    
+    if (results.length === 0) {
+        noResults.style.display = 'block';
+        return;
+    }
+    
+    noResults.style.display = 'none';
+    
+    // Show matching FAQs
+    results.forEach(result => {
+        const matchingFAQ = allFAQs.find(faq => {
+            const question = faq.querySelector('.faq-question span').textContent;
+            return question === result.question;
+        });
+        
+        if (matchingFAQ) {
+            matchingFAQ.style.display = 'block';
+        }
+    });
+}
+
+function filterFAQs() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const noResults = document.getElementById('noResults');
+    let visibleCount = 0;
+    
+    allFAQs.forEach(faq => {
+        const category = faq.dataset.category;
+        const searchContent = faq.dataset.search;
+        
+        const categoryMatch = currentFilter === 'all' || category === currentFilter;
+        const searchMatch = searchTerm === '' || searchContent.includes(searchTerm);
+        
+        if (categoryMatch && searchMatch) {
+            faq.style.display = 'block';
+            visibleCount++;
+        } else {
+            faq.style.display = 'none';
+        }
+    });
+    
+    noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+}
+
+// Auto-search with debounce
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(searchFAQs, 300);
+});
+
+// Close FAQs when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.faq-item')) {
+        document.querySelectorAll('.faq-answer.show').forEach(answer => {
+            answer.classList.remove('show');
+            answer.previousElementSibling.querySelector('.expand-icon').classList.remove('rotated');
+        });
+    }
+});
+</script>
+{% endblock %}

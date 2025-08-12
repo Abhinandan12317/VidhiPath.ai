@@ -1,0 +1,682 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - VidhiPath.ai{% endblock %}
+
+{% block extra_css %}
+
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        color: white;
+        padding: 2rem;
+        margin: -2rem -1.5rem 2rem -1.5rem;
+        border-radius: 0 0 20px 20px;
+        text-align: center;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        border-left: 4px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card.users { border-left-color: #1e40af; }
+    .stat-card.chats { border-left-color: #059669; }
+    .stat-card.documents { border-left-color: #d97706; }
+    .stat-card.analyses { border-left-color: #7c3aed; }
+    .stat-card.feedback { border-left-color: #dc2626; }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-card.users .stat-number { color: #1e40af; }
+    .stat-card.chats .stat-number { color: #059669; }
+    .stat-card.documents .stat-number { color: #d97706; }
+    .stat-card.analyses .stat-number { color: #7c3aed; }
+    .stat-card.feedback .stat-number { color: #dc2626; }
+
+    .stat-label {
+        color: #6b7280;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.875rem;
+    }
+
+    .admin-tabs {
+        display: flex;
+        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 2rem;
+        overflow-x: auto;
+    }
+
+    .admin-tab {
+        background: none;
+        border: none;
+        padding: 1rem 2rem;
+        cursor: pointer;
+        font-weight: 600;
+        color: #6b7280;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .admin-tab.active {
+        color: #7c3aed;
+        border-bottom-color: #7c3aed;
+    }
+
+    .admin-tab:hover {
+        color: #7c3aed;
+        background: #f8fafc;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .data-table {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-header {
+        background: #f8fafc;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .table-title {
+        font-weight: 600;
+        color: #374151;
+        margin: 0;
+    }
+
+    .table-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .table-body {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .table-row {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f3f4f6;
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr auto;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .table-row:last-child {
+        border-bottom: none;
+    }
+
+    .table-row:hover {
+        background: #f8fafc;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        background: #7c3aed;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .user-details h4 {
+        margin: 0;
+        color: #374151;
+        font-size: 0.875rem;
+    }
+
+    .user-details p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 0.75rem;
+    }
+
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .role-admin {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .role-user {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .feedback-item {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .feedback-item:last-child {
+        border-bottom: none;
+    }
+
+    .feedback-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+
+    .feedback-user {
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .feedback-date {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .feedback-message {
+        color: #6b7280;
+        line-height: 1.6;
+        margin-bottom: 0.5rem;
+    }
+
+    .feedback-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        background: none;
+        border: 1px solid #d1d5db;
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        cursor: pointer;
+        color: #6b7280;
+        font-size: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+        background: #f3f4f6;
+    }
+
+    .action-btn.primary {
+        background: #7c3aed;
+        color: white;
+        border-color: #7c3aed;
+    }
+
+    .action-btn.primary:hover {
+        background: #6d28d9;
+    }
+
+    @media (max-width: 768px) {
+        .admin-header {
+            padding: 1.5rem 1rem;
+            margin: -2rem -1rem 2rem -1rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .admin-tabs {
+            gap: 0;
+        }
+        
+        .admin-tab {
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .table-row {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+            padding: 1rem;
+        }
+        
+        .table-header {
+            padding: 1rem;
+        }
+    }
+    @media (max-width: 1300px) {
+    .admin-container {
+        max-width: 98vw;
+        padding: 1rem 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">
+        <i class="fas fa-cog"></i> Admin Panel
+    </h1>
+    <p style="font-size: 1.1rem; opacity: 0.9; margin: 0;">
+        Manage users, monitor system activity, and oversee platform operations
+    </p>
+</div>
+
+<!-- Statistics Overview -->
+<div class="stats-grid">
+    <div class="stat-card users">
+        <div class="stat-number">{{ stats.total_users or 0 }}</div>
+        <div class="stat-label">Total Users</div>
+    </div>
+    
+    <div class="stat-card chats">
+        <div class="stat-number">{{ stats.total_chats or 0 }}</div>
+        <div class="stat-label">Legal Chats</div>
+    </div>
+    
+    <div class="stat-card documents">
+        <div class="stat-number">{{ stats.total_documents or 0 }}</div>
+        <div class="stat-label">Documents Processed</div>
+    </div>
+    
+    <div class="stat-card analyses">
+        <div class="stat-number">{{ stats.total_analyses or 0 }}</div>
+        <div class="stat-label">Case Analyses</div>
+    </div>
+    
+    <div class="stat-card feedback">
+        <div class="stat-number">{{ stats.pending_feedback or 0 }}</div>
+        <div class="stat-label">Pending Feedback</div>
+    </div>
+</div>
+
+<!-- Admin Tabs -->
+<div class="admin-tabs">
+    <button class="admin-tab active" onclick="switchAdminTab('users')">
+        <i class="fas fa-users"></i> User Management
+    </button>
+    <button class="admin-tab" onclick="switchAdminTab('feedback')">
+        <i class="fas fa-comment-dots"></i> Feedback & Reports
+    </button>
+    <button class="admin-tab" onclick="switchAdminTab('analytics')">
+        <i class="fas fa-chart-bar"></i> Analytics
+    </button>
+    <button class="admin-tab" onclick="switchAdminTab('settings')">
+        <i class="fas fa-cog"></i> System Settings
+    </button>
+</div>
+
+<!-- User Management Tab -->
+<div id="usersTab" class="tab-content active">
+    <div class="data-table">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-users"></i> Registered Users
+            </h3>
+            <div class="table-actions">
+                <button class="action-btn primary" onclick="refreshUsers()">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+                <button class="action-btn" onclick="exportUsers()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-body" id="usersTableBody">
+            <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                <p>Loading users...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Management Tab -->
+<div id="feedbackTab" class="tab-content">
+    <div class="data-table">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fas fa-comment-dots"></i> User Feedback & Reports
+            </h3>
+            <div class="table-actions">
+                <button class="action-btn primary" onclick="refreshFeedback()">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+                <button class="action-btn" onclick="markAllRead()">
+                    <i class="fas fa-check"></i> Mark All Read
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-body" id="feedbackTableBody">
+            <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                <p>Loading feedback...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics Tab -->
+<div id="analyticsTab" class="tab-content">
+    <div class="card">
+        <h3 style="color: #7c3aed; margin-bottom: 1rem;">
+            <i class="fas fa-chart-bar"></i> Platform Analytics
+        </h3>
+        <p style="color: #6b7280; margin-bottom: 2rem;">
+            Detailed analytics and insights about platform usage and performance.
+        </p>
+        
+        <div class="grid grid-2">
+            <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px;">
+                <h4 style="color: #374151; margin-bottom: 1rem;">Usage Trends</h4>
+                <ul style="color: #6b7280; margin: 0; padding-left: 1.5rem;">
+                    <li>Daily active users</li>
+                    <li>Feature usage statistics</li>
+                    <li>Popular legal topics</li>
+                    <li>Document processing trends</li>
+                </ul>
+            </div>
+            
+            <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px;">
+                <h4 style="color: #374151; margin-bottom: 1rem;">Performance Metrics</h4>
+                <ul style="color: #6b7280; margin: 0; padding-left: 1.5rem;">
+                    <li>AI response accuracy</li>
+                    <li>System response times</li>
+                    <li>Error rates and issues</li>
+                    <li>User satisfaction scores</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <button class="btn" style="background: #7c3aed; color: white;">
+                <i class="fas fa-chart-line"></i> View Detailed Analytics
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- System Settings Tab -->
+<div id="settingsTab" class="tab-content">
+    <div class="card">
+        <h3 style="color: #7c3aed; margin-bottom: 1rem;">
+            <i class="fas fa-cog"></i> System Configuration
+        </h3>
+        
+        <div class="grid grid-2">
+            <div>
+                <h4 style="color: #374151; margin-bottom: 1rem;">AI Model Settings</h4>
+                <div class="form-group">
+                    <label class="form-label">Legal Q&A Model</label>
+                    <select class="form-select">
+                        <option>google/flan-t5-large</option>
+                        <option>nlpaueb/legal-bert-base-uncased</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Response Temperature</label>
+                    <input type="range" min="0.1" max="1.0" step="0.1" value="0.7" class="form-input">
+                </div>
+            </div>
+            
+            <div>
+                <h4 style="color: #374151; margin-bottom: 1rem;">System Limits</h4>
+                <div class="form-group">
+                    <label class="form-label">Max File Size (MB)</label>
+                    <input type="number" value="16" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Rate Limit (requests/hour)</label>
+                    <input type="number" value="100" class="form-input">
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <button class="btn" style="background: #7c3aed; color: white;">
+                <i class="fas fa-save"></i> Save Settings
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentTab = 'users';
+
+function switchAdminTab(tab) {
+    // Update tab buttons
+    document.querySelectorAll('.admin-tab').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[onclick="switchAdminTab('${tab}')"]`).classList.add('active');
+    
+    // Update tab content
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    document.getElementById(tab + 'Tab').classList.add('active');
+    
+    currentTab = tab;
+    
+    // Load data for the selected tab
+    if (tab === 'users') {
+        loadUsers();
+    } else if (tab === 'feedback') {
+        loadFeedback();
+    }
+}
+
+async function loadUsers() {
+    try {
+        const response = await fetch('/api/admin/users');
+        const users = await response.json();
+        
+        const tbody = document.getElementById('usersTableBody');
+        
+        if (users.length === 0) {
+            tbody.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                    <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>No users found</p>
+                </div>
+            `;
+            return;
+        }
+        
+        tbody.innerHTML = users.map(user => `
+            <div class="table-row">
+                <div class="user-info">
+                    <div class="user-avatar">${user.name.charAt(0).toUpperCase()}</div>
+                    <div class="user-details">
+                        <h4>${user.name}</h4>
+                        <p>${user.email}</p>
+                    </div>
+                </div>
+                <div>
+                    <span class="role-badge role-${user.role}">${user.role.toUpperCase()}</span>
+                </div>
+                <div style="color: #6b7280; font-size: 0.875rem;">
+                    ${new Date(user.creation_date).toLocaleDateString()}
+                </div>
+                <div style="color: #6b7280; font-size: 0.875rem;">
+                    ${user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
+                </div>
+                <div>
+                    <button class="action-btn" onclick="viewUser(${user.user_id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading users:', error);
+        document.getElementById('usersTableBody').innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: #ef4444;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                <p>Error loading users</p>
+            </div>
+        `;
+    }
+}
+
+async function loadFeedback() {
+    try {
+        const response = await fetch('/api/admin/feedback');
+        const feedback = await response.json();
+        
+        const tbody = document.getElementById('feedbackTableBody');
+        
+        if (feedback.length === 0) {
+            tbody.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                    <i class="fas fa-comment-dots" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>No feedback found</p>
+                </div>
+            `;
+            return;
+        }
+        
+        tbody.innerHTML = feedback.map(item => `
+            <div class="feedback-item">
+                <div class="feedback-header">
+                    <div class="feedback-user">${item.name} (${item.email})</div>
+                    <div class="feedback-date">${new Date(item.date).toLocaleDateString()}</div>
+                </div>
+                <div class="feedback-message">${item.message}</div>
+                <div class="feedback-actions">
+                    <button class="action-btn primary" onclick="replyToFeedback(${item.report_id})">
+                        <i class="fas fa-reply"></i> Reply
+                    </button>
+                    <button class="action-btn" onclick="markAsRead(${item.report_id})">
+                        <i class="fas fa-check"></i> Mark Read
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading feedback:', error);
+        document.getElementById('feedbackTableBody').innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: #ef4444;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                <p>Error loading feedback</p>
+            </div>
+        `;
+    }
+}
+
+function refreshUsers() {
+    document.getElementById('usersTableBody').innerHTML = `
+        <div style="text-align: center; padding: 2rem; color: #6b7280;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <p>Refreshing users...</p>
+        </div>
+    `;
+    loadUsers();
+}
+
+function refreshFeedback() {
+    document.getElementById('feedbackTableBody').innerHTML = `
+        <div style="text-align: center; padding: 2rem; color: #6b7280;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <p>Refreshing feedback...</p>
+        </div>
+    `;
+    loadFeedback();
+}
+
+function viewUser(userId) {
+    alert(`Feature coming soon: View detailed user information for user ID ${userId}`);
+}
+
+function replyToFeedback(reportId) {
+    const reply = prompt('Enter your reply to this feedback:');
+    if (reply) {
+        alert(`Feature coming soon: Send reply "${reply}" to feedback ID ${reportId}`);
+    }
+}
+
+function markAsRead(reportId) {
+    alert(`Feature coming soon: Mark feedback ID ${reportId} as read`);
+}
+
+function markAllRead() {
+    if (confirm('Mark all feedback as read?')) {
+        alert('Feature coming soon: Mark all feedback as read');
+    }
+}
+
+function exportUsers() {
+    alert('Feature coming soon: Export user data as CSV');
+}
+
+// Load initial data
+document.addEventListener('DOMContentLoaded', function() {
+    loadUsers();
+});
+
+// Auto-refresh data every 30 seconds
+setInterval(function() {
+    if (currentTab === 'users') {
+        loadUsers();
+    } else if (currentTab === 'feedback') {
+        loadFeedback();
+    }
+}, 30000);
+
+
+</script>
+{% endblock %}

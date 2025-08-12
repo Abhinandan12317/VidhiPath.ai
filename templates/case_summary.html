@@ -1,0 +1,585 @@
+{% extends "base.html" %}
+
+{% block title %}Case Summary Generator - VidhiPath.ai{% endblock %}
+
+{% block extra_css %}
+<style>
+    .input-tabs {
+        display: flex;
+        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 2rem;
+    }
+
+    .tab-button {
+        background: none;
+        border: none;
+        padding: 1rem 2rem;
+        cursor: pointer;
+        font-weight: 600;
+        color: #6b7280;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .tab-button.active {
+        color: #1e40af;
+        border-bottom-color: #1e40af;
+    }
+
+    .tab-button:hover {
+        color: #1e40af;
+        background: #f8fafc;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .summary-result {
+        margin-top: 2rem;
+        display: none;
+    }
+
+    .summary-box {
+        background: #f8fafc;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .summary-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .summary-text {
+        line-height: 1.8;
+        color: #374151;
+        font-size: 1rem;
+    }
+
+    .copy-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: #1e40af;
+        color: white;
+        border: none;
+        padding: 0.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .copy-btn:hover {
+        background: #1e3a8a;
+        transform: translateY(-1px);
+    }
+
+    .upload-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        background: #f9fafb;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-bottom: 1rem;
+    }
+
+    .upload-area:hover {
+        border-color: #1e40af;
+        background: #f0f9ff;
+    }
+
+    .upload-area.dragover {
+        border-color: #059669;
+        background: #f0fdf4;
+    }
+
+    .file-info {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: none;
+    }
+
+    .loading-summary {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+        background: #f8fafc;
+        border-radius: 12px;
+        margin-top: 2rem;
+    }
+
+    .loading-dots {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin: 1rem 0;
+    }
+
+    .loading-dot {
+        width: 12px;
+        height: 12px;
+        background: #1e40af;
+        border-radius: 50%;
+        animation: bounce 1.5s infinite;
+    }
+
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-20px); }
+    }
+
+    .word-count {
+        font-size: 0.875rem;
+        color: #6b7280;
+        text-align: right;
+        margin-top: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .input-tabs {
+            flex-direction: column;
+        }
+        
+        .tab-button {
+            padding: 0.75rem 1rem;
+            text-align: center;
+        }
+        
+        .summary-box {
+            padding: 1.5rem;
+        }
+        
+        .copy-btn {
+            position: static;
+            margin-top: 1rem;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1 class="card-title">
+            <i class="fas fa-file-alt"></i> Case Summary Generator
+        </h1>
+    </div>
+
+    <p style="color: #6b7280; margin-bottom: 2rem;">
+        Transform complex legal documents and case details into clear, easy-to-understand summaries. 
+        You can either paste text directly or upload a document for summarization.
+    </p>
+
+    <div class="input-tabs">
+        <button class="tab-button active" onclick="switchTab('text')">
+            <i class="fas fa-keyboard"></i> Text Input
+        </button>
+        <button class="tab-button" onclick="switchTab('file')">
+            <i class="fas fa-file-upload"></i> File Upload
+        </button>
+    </div>
+
+    <form id="summaryForm" enctype="multipart/form-data">
+        <!-- Text Input Tab -->
+        <div id="textTab" class="tab-content active">
+            <div class="form-group">
+                <label for="textInput" class="form-label">Legal Text or Case Details</label>
+                <textarea 
+                    id="textInput" 
+                    name="text_input" 
+                    class="form-input form-textarea" 
+                    placeholder="Paste your legal document content, case details, or any legal text that you want to summarize..."
+                    style="min-height: 200px;"
+                    oninput="updateWordCount()"
+                ></textarea>
+                <div class="word-count" id="wordCount">0 words</div>
+            </div>
+        </div>
+
+        <!-- File Upload Tab -->
+        <div id="fileTab" class="tab-content">
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #6b7280; margin-bottom: 1rem;"></i>
+                <h3 style="color: #374151; margin-bottom: 0.5rem;">Upload Document for Summarization</h3>
+                <p style="color: #6b7280; margin-bottom: 1rem;">
+                    Click to upload or drag and drop your legal document
+                </p>
+                
+                <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                    <span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">PDF</span>
+                    <span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">DOCX</span>
+                    <span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">TXT</span>
+                </div>
+                
+                <input type="file" id="fileInput" name="file" accept=".pdf,.docx,.doc,.txt" style="display: none;" onchange="handleFileSelect(event)">
+            </div>
+
+            <div class="file-info" id="fileInfo">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <i class="fas fa-file" id="fileIcon" style="font-size: 2rem; color: #6b7280;"></i>
+                        <div>
+                            <h4 id="fileName" style="margin: 0; color: #374151;"></h4>
+                            <p id="fileSize" style="margin: 0; color: #6b7280; font-size: 0.875rem;"></p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="removeFile()" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.25rem;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <button type="submit" id="generateBtn" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">
+                <i class="fas fa-magic"></i> Generate Summary
+            </button>
+        </div>
+    </form>
+
+    <div class="loading-summary" id="loadingSummary">
+        <h3 style="color: #1e40af; margin-bottom: 1rem;">Generating Summary</h3>
+        <div class="loading-dots">
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+        </div>
+        <p style="color: #6b7280; margin: 0;">Our AI is analyzing your content and creating a comprehensive summary...</p>
+    </div>
+
+    <div class="summary-result" id="summaryResult">
+        <h2 style="color: #1e40af; margin-bottom: 1.5rem; text-align: center;">
+            <i class="fas fa-file-contract"></i> Generated Summary
+        </h2>
+
+        <div class="summary-box">
+            <button class="copy-btn" onclick="copySummary()" title="Copy summary">
+                <i class="fas fa-copy"></i>
+            </button>
+            
+            <div class="summary-header">
+                <h3 style="color: #374151; margin: 0;">
+                    <i class="fas fa-compress-alt"></i> Summary
+                </h3>
+                <span id="summaryTimestamp" style="color: #6b7280; font-size: 0.875rem;"></span>
+            </div>
+            
+            <div class="summary-text" id="summaryText">
+                <!-- Summary content will be inserted here -->
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <button onclick="generateAnotherSummary()" class="btn btn-outline" style="margin-right: 1rem;">
+                <i class="fas fa-plus"></i> Summarize Another Document
+            </button>
+            <button onclick="downloadSummary()" class="btn btn-secondary">
+                <i class="fas fa-download"></i> Download Summary
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 2rem;">
+    <h3 style="color: #1e40af; margin-bottom: 1rem;">
+        <i class="fas fa-lightbulb"></i> Summary Generation Tips
+    </h3>
+    
+    <div class="grid grid-2">
+        <div>
+            <h4 style="color: #059669; margin-bottom: 0.5rem;">Best Practices</h4>
+            <ul style="color: #6b7280; margin: 0; padding-left: 1.5rem;">
+                <li>Provide complete documents for comprehensive summaries</li>
+                <li>Include all relevant sections and clauses</li>
+                <li>Ensure text is clear and readable</li>
+                <li>Use structured legal documents when possible</li>
+            </ul>
+        </div>
+        
+        <div>
+            <h4 style="color: #d97706; margin-bottom: 0.5rem;">What Gets Summarized</h4>
+            <ul style="color: #6b7280; margin: 0; padding-left: 1.5rem;">
+                <li>Key legal points and arguments</li>
+                <li>Important dates and deadlines</li>
+                <li>Parties involved and their roles</li>
+                <li>Main conclusions and outcomes</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 1rem; margin-top: 1rem; border-radius: 0 8px 8px 0;">
+        <p style="margin: 0; color: #1e40af;">
+            <i class="fas fa-info-circle"></i>
+            <strong>Note:</strong> Summaries are generated using AI and should be reviewed for accuracy. 
+            Always refer to the original document for complete legal details.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedFile = null;
+let currentTab = 'text';
+
+function switchTab(tab) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+    
+    // Update tab content
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    document.getElementById(tab + 'Tab').classList.add('active');
+    
+    currentTab = tab;
+    
+    // Reset form when switching tabs
+    if (tab === 'text') {
+        removeFile();
+    } else {
+        document.getElementById('textInput').value = '';
+        updateWordCount();
+    }
+}
+
+function updateWordCount() {
+    const text = document.getElementById('textInput').value;
+    const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+    document.getElementById('wordCount').textContent = `${wordCount} words`;
+}
+
+// Drag and drop functionality
+const uploadArea = document.getElementById('uploadArea');
+
+uploadArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        handleFile(files[0]);
+    }
+});
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        handleFile(file);
+    }
+}
+
+function handleFile(file) {
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword', 'text/plain'];
+    const allowedExtensions = ['.pdf', '.docx', '.doc', '.txt'];
+    
+    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+    
+    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+        alert('Please upload a valid document file (PDF, DOCX, DOC, or TXT)');
+        return;
+    }
+    
+    // Validate file size (16MB max)
+    if (file.size > 16 * 1024 * 1024) {
+        alert('File size must be less than 16MB');
+        return;
+    }
+    
+    selectedFile = file;
+    displayFileInfo(file);
+}
+
+function displayFileInfo(file) {
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const fileIcon = document.getElementById('fileIcon');
+    
+    fileName.textContent = file.name;
+    fileSize.textContent = formatFileSize(file.size);
+    
+    // Set appropriate icon
+    const extension = file.name.split('.').pop().toLowerCase();
+    switch(extension) {
+        case 'pdf':
+            fileIcon.className = 'fas fa-file-pdf';
+            fileIcon.style.color = '#dc2626';
+            break;
+        case 'docx':
+        case 'doc':
+            fileIcon.className = 'fas fa-file-word';
+            fileIcon.style.color = '#1e40af';
+            break;
+        case 'txt':
+            fileIcon.className = 'fas fa-file-alt';
+            fileIcon.style.color = '#6b7280';
+            break;
+        default:
+            fileIcon.className = 'fas fa-file';
+            fileIcon.style.color = '#6b7280';
+    }
+    
+    fileInfo.style.display = 'block';
+}
+
+function removeFile() {
+    selectedFile = null;
+    document.getElementById('fileInfo').style.display = 'none';
+    document.getElementById('fileInput').value = '';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Form submission
+document.getElementById('summaryForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    
+    if (currentTab === 'text') {
+        const textInput = document.getElementById('textInput').value.trim();
+        if (!textInput) {
+            alert('Please enter some text to summarize');
+            return;
+        }
+        formData.append('text_input', textInput);
+    } else {
+        if (!selectedFile) {
+            alert('Please select a file to upload');
+            return;
+        }
+        formData.append('file', selectedFile);
+    }
+    
+    // Show loading
+    document.getElementById('loadingSummary').style.display = 'block';
+    document.getElementById('summaryResult').style.display = 'none';
+    
+    const generateBtn = document.getElementById('generateBtn');
+    generateBtn.innerHTML = '<div class="loading"></div> Generating...';
+    generateBtn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/summarize', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        setTimeout(() => {
+            document.getElementById('loadingSummary').style.display = 'none';
+            
+            if (data.error) {
+                alert('Error: ' + data.error);
+            } else {
+                displaySummary(data);
+            }
+            
+            // Reset button
+            generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Summary';
+            generateBtn.disabled = false;
+        }, 2000); // Add delay for better UX
+        
+    } catch (error) {
+        document.getElementById('loadingSummary').style.display = 'none';
+        alert('Error generating summary. Please try again.');
+        
+        generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Summary';
+        generateBtn.disabled = false;
+    }
+});
+
+function displaySummary(data) {
+    document.getElementById('summaryText').textContent = data.summary;
+    document.getElementById('summaryTimestamp').textContent = 'Generated on ' + new Date(data.timestamp).toLocaleString();
+    
+    document.getElementById('summaryResult').style.display = 'block';
+    
+    // Scroll to results
+    document.getElementById('summaryResult').scrollIntoView({ behavior: 'smooth' });
+}
+
+function copySummary() {
+    const summaryText = document.getElementById('summaryText').textContent;
+    navigator.clipboard.writeText(summaryText).then(() => {
+        const copyBtn = document.querySelector('.copy-btn');
+        const originalHTML = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+        copyBtn.style.background = '#10b981';
+        
+        setTimeout(() => {
+            copyBtn.innerHTML = originalHTML;
+            copyBtn.style.background = '#1e40af';
+        }, 2000);
+    }).catch(() => {
+        alert('Failed to copy summary. Please select and copy manually.');
+    });
+}
+
+function downloadSummary() {
+    const summaryText = document.getElementById('summaryText').textContent;
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    const filename = `legal-summary-${timestamp}.txt`;
+    
+    const blob = new Blob([summaryText], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+function generateAnotherSummary() {
+    document.getElementById('summaryResult').style.display = 'none';
+    document.getElementById('summaryForm').reset();
+    removeFile();
+    updateWordCount();
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+{% endblock %}

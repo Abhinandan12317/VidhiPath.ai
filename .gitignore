@@ -1,0 +1,11 @@
+venv/
+.env
+__pycache__/
+*.pyc
+uploads/
+.DS_Store
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+supabase/migrations/*.sql

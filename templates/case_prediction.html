@@ -1,0 +1,490 @@
+{% extends "base.html" %}
+
+{% block title %}Case Prediction Engine - VidhiPath.ai{% endblock %}
+
+{% block extra_css %}
+<style>
+    .prediction-form {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .prediction-result {
+        margin-top: 2rem;
+        display: none;
+    }
+
+    .result-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #1e40af;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-card.success {
+        border-left-color: #10b981;
+    }
+
+    .result-card.warning {
+        border-left-color: #f59e0b;
+    }
+
+    .result-card.info {
+        border-left-color: #3b82f6;
+    }
+
+    .probability-meter {
+        background: #f3f4f6;
+        border-radius: 8px;
+        height: 12px;
+        margin: 1rem 0;
+        overflow: hidden;
+    }
+
+    .probability-fill {
+        height: 100%;
+        border-radius: 8px;
+        transition: width 1s ease-in-out;
+        background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+    }
+
+    .factor-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .factor-list li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f3f4f6;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .factor-list li:last-child {
+        border-bottom: none;
+    }
+
+    .step-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        counter-reset: step-counter;
+    }
+
+    .step-list li {
+        padding: 1rem 0;
+        border-bottom: 1px solid #f3f4f6;
+        position: relative;
+        padding-left: 3rem;
+        counter-increment: step-counter;
+    }
+
+    .step-list li:last-child {
+        border-bottom: none;
+    }
+
+    .step-list li::before {
+        content: counter(step-counter);
+        position: absolute;
+        left: 0;
+        top: 1rem;
+        width: 2rem;
+        height: 2rem;
+        background: #1e40af;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .loading-animation {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f4f6;
+        border-top: 4px solid #1e40af;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .prediction-form {
+            padding: 1.5rem;
+        }
+        
+        .result-card {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1 class="card-title">
+            <i class="fas fa-chart-line"></i> Case Prediction & Analysis Engine
+        </h1>
+    </div>
+
+    <p style="color: #6b7280; margin-bottom: 2rem;">
+        Enter your case details to get AI-powered predictions about outcome probability, estimated duration, 
+        and recommended jurisdiction. Our analysis is based on Indian legal patterns and precedents.
+    </p>
+
+    <form id="predictionForm" class="prediction-form">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="caseType" class="form-label">Case Type</label>
+                <select id="caseType" name="case_type" class="form-select" required>
+                    <option value="">Select case type</option>
+                    <option value="civil">Civil Case</option>
+                    <option value="criminal">Criminal Case</option>
+                    <option value="family">Family/Matrimonial</option>
+                    <option value="property">Property Dispute</option>
+                    <option value="consumer">Consumer Complaint</option>
+                    <option value="labor">Labor/Employment</option>
+                    <option value="tax">Tax/Revenue</option>
+                    <option value="constitutional">Constitutional</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="yearFiled" class="form-label">Year of Filing</label>
+                <select id="yearFiled" name="year_filed" class="form-select" required>
+                    <option value="">Select year</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                    <option value="2021">2021</option>
+                    <option value="2020">2020</option>
+                    <option value="2019">2019</option>
+                    <option value="2018">2018</option>
+                    <option value="earlier">Earlier than 2018</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="location" class="form-label">Location/State</label>
+            <select id="location" name="location" class="form-select" required>
+                <option value="">Select state</option>
+                <option value="andhra-pradesh">Andhra Pradesh</option>
+                <option value="arunachal-pradesh">Arunachal Pradesh</option>
+                <option value="assam">Assam</option>
+                <option value="bihar">Bihar</option>
+                <option value="chhattisgarh">Chhattisgarh</option>
+                <option value="goa">Goa</option>
+                <option value="gujarat">Gujarat</option>
+                <option value="haryana">Haryana</option>
+                <option value="himachal-pradesh">Himachal Pradesh</option>
+                <option value="jharkhand">Jharkhand</option>
+                <option value="karnataka">Karnataka</option>
+                <option value="kerala">Kerala</option>
+                <option value="madhya-pradesh">Madhya Pradesh</option>
+                <option value="maharashtra">Maharashtra</option>
+                <option value="manipur">Manipur</option>
+                <option value="meghalaya">Meghalaya</option>
+                <option value="mizoram">Mizoram</option>
+                <option value="nagaland">Nagaland</option>
+                <option value="odisha">Odisha</option>
+                <option value="punjab">Punjab</option>
+                <option value="rajasthan">Rajasthan</option>
+                <option value="sikkim">Sikkim</option>
+                <option value="tamil-nadu">Tamil Nadu</option>
+                <option value="telangana">Telangana</option>
+                <option value="tripura">Tripura</option>
+                <option value="uttar-pradesh">Uttar Pradesh</option>
+                <option value="uttarakhand">Uttarakhand</option>
+                <option value="west-bengal">West Bengal</option>
+                <option value="delhi">Delhi</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="description" class="form-label">Case Description</label>
+            <textarea 
+                id="description" 
+                name="description" 
+                class="form-input form-textarea" 
+                placeholder="Provide a detailed description of your case, including key facts, parties involved, and main legal issues..."
+                required
+                style="min-height: 120px;"
+            ></textarea>
+            <small style="color: #6b7280; font-size: 0.875rem;">
+                Provide as much detail as possible for more accurate predictions
+            </small>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <button type="submit" id="predictBtn" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">
+                <i class="fas fa-crystal-ball"></i> Analyze Case
+            </button>
+        </div>
+    </form>
+
+    <div class="loading-animation" id="loadingAnimation">
+        <div class="loading-spinner"></div>
+        <h3 style="color: #1e40af; margin-bottom: 0.5rem;">Analyzing Your Case</h3>
+        <p style="color: #6b7280;">Our AI is processing your case details and generating predictions...</p>
+    </div>
+
+    <div class="prediction-result" id="predictionResult">
+        <h2 style="color: #1e40af; margin-bottom: 1.5rem; text-align: center;">
+            <i class="fas fa-chart-bar"></i> Case Analysis Results
+        </h2>
+
+        <div class="grid grid-2">
+            <div class="result-card success">
+                <h3 style="color: #065f46; margin-bottom: 1rem;">
+                    <i class="fas fa-percentage"></i> Success Probability
+                </h3>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #065f46; margin-bottom: 0.5rem;" id="successProbability">
+                    Calculating...
+                </div>
+                <div class="probability-meter">
+                    <div class="probability-fill" id="probabilityFill" style="width: 0%;"></div>
+                </div>
+                <p style="color: #6b7280; margin: 0; font-size: 0.875rem;">
+                    Based on case type, jurisdiction, and provided details
+                </p>
+            </div>
+
+            <div class="result-card warning">
+                <h3 style="color: #92400e; margin-bottom: 1rem;">
+                    <i class="fas fa-clock"></i> Estimated Duration
+                </h3>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #92400e; margin-bottom: 0.5rem;" id="estimatedDuration">
+                    Calculating...
+                </div>
+                <p style="color: #6b7280; margin: 0; font-size: 0.875rem;">
+                    Typical timeframe for resolution in this jurisdiction
+                </p>
+            </div>
+        </div>
+
+        <div class="result-card info">
+            <h3 style="color: #1e40af; margin-bottom: 1rem;">
+                <i class="fas fa-map-marker-alt"></i> Recommended Jurisdiction
+            </h3>
+            <div style="font-size: 1.25rem; font-weight: 600; color: #1e40af; margin-bottom: 0.5rem;" id="recommendedJurisdiction">
+                Analyzing...
+            </div>
+            <p style="color: #6b7280; margin: 0; font-size: 0.875rem;">
+                Most appropriate court or tribunal for your case type
+            </p>
+        </div>
+
+        <div class="result-card">
+            <h3 style="color: #374151; margin-bottom: 1rem;">
+                <i class="fas fa-list-ul"></i> Key Factors Affecting Your Case
+            </h3>
+            <ul class="factor-list" id="keyFactors">
+                <li><i class="fas fa-spinner fa-spin"></i> Analyzing factors...</li>
+            </ul>
+        </div>
+
+        <div class="result-card">
+            <h3 style="color: #374151; margin-bottom: 1rem;">
+                <i class="fas fa-route"></i> Recommended Next Steps
+            </h3>
+            <ol class="step-list" id="nextSteps">
+                <li>Generating recommendations...</li>
+            </ol>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <button onclick="analyzeAnotherCase()" class="btn btn-outline" style="margin-right: 1rem;">
+                <i class="fas fa-plus"></i> Analyze Another Case
+            </button>
+            <a href="{{ url_for('saved_content') }}" class="btn btn-secondary">
+                <i class="fas fa-bookmark"></i> View Saved Analyses
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 2rem;">
+    <h3 style="color: #1e40af; margin-bottom: 1rem;">
+        <i class="fas fa-info-circle"></i> How Case Prediction Works
+    </h3>
+    
+    <div class="grid grid-2">
+        <div>
+            <h4 style="color: #059669; margin-bottom: 0.5rem;">Analysis Factors</h4>
+            <ul style="color: #6b7280; margin: 0; padding-left: 1.5rem;">
+                <li>Case type and legal category</li>
+                <li>Jurisdiction and local court patterns</li>
+                <li>Historical case outcomes</li>
+                <li>Complexity of legal issues involved</li>
+            </ul>
+        </div>
+        
+        <div>
+            <h4 style="color: #d97706; margin-bottom: 0.5rem;">Prediction Accuracy</h4>
+            <ul style="color: #6b7280; margin: 0; padding-left: 1.5rem;">
+                <li>Based on Indian legal precedents</li>
+                <li>Considers regional variations</li>
+                <li>Updated with recent legal trends</li>
+                <li>Provides probability ranges, not certainties</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; margin-top: 1rem; border-radius: 0 8px 8px 0;">
+        <p style="margin: 0; color: #92400e;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Important:</strong> These predictions are estimates based on AI analysis and should not replace 
+            professional legal advice. Always consult with a qualified lawyer for your specific case.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        case_type: formData.get('case_type'),
+        year_filed: formData.get('year_filed'),
+        location: formData.get('location'),
+        description: formData.get('description')
+    };
+    
+    // Validate form
+    if (!data.case_type || !data.year_filed || !data.location || !data.description.trim()) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    // Show loading animation
+    document.getElementById('predictionForm').style.display = 'none';
+    document.getElementById('loadingAnimation').style.display = 'block';
+    document.getElementById('predictionResult').style.display = 'none';
+    
+    try {
+        const response = await fetch('/api/predict-case', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.error) {
+            throw new Error(result.error);
+        }
+        
+        // Hide loading and show results
+        setTimeout(() => {
+            document.getElementById('loadingAnimation').style.display = 'none';
+            displayPredictionResult(result.prediction);
+            document.getElementById('predictionResult').style.display = 'block';
+            
+            // Scroll to results
+            document.getElementById('predictionResult').scrollIntoView({ behavior: 'smooth' });
+        }, 2000); // Add delay for better UX
+        
+    } catch (error) {
+        document.getElementById('loadingAnimation').style.display = 'none';
+        document.getElementById('predictionForm').style.display = 'block';
+        alert('Error analyzing case: ' + error.message);
+    }
+});
+
+function displayPredictionResult(prediction) {
+    // Success Probability
+    document.getElementById('successProbability').textContent = prediction.success_probability;
+    
+    // Animate probability meter
+    const probabilityText = prediction.success_probability.toLowerCase();
+    let percentage = 50; // default
+    
+    if (probabilityText.includes('high') || probabilityText.includes('70') || probabilityText.includes('80')) {
+        percentage = 75;
+    } else if (probabilityText.includes('moderate') || probabilityText.includes('60')) {
+        percentage = 60;
+    } else if (probabilityText.includes('low') || probabilityText.includes('40')) {
+        percentage = 40;
+    }
+    
+    setTimeout(() => {
+        document.getElementById('probabilityFill').style.width = percentage + '%';
+    }, 500);
+    
+    // Estimated Duration
+    document.getElementById('estimatedDuration').textContent = prediction.estimated_duration;
+    
+    // Recommended Jurisdiction
+    document.getElementById('recommendedJurisdiction').textContent = prediction.recommended_jurisdiction;
+    
+    // Key Factors
+    const factorsList = document.getElementById('keyFactors');
+    factorsList.innerHTML = '';
+    
+    prediction.key_factors.forEach(factor => {
+        const li = document.createElement('li');
+        li.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> ${factor}`;
+        factorsList.appendChild(li);
+    });
+    
+    // Next Steps
+    const stepsList = document.getElementById('nextSteps');
+    stepsList.innerHTML = '';
+    
+    prediction.next_steps.forEach(step => {
+        const li = document.createElement('li');
+        li.textContent = step;
+        stepsList.appendChild(li);
+    });
+}
+
+function analyzeAnotherCase() {
+    document.getElementById('predictionResult').style.display = 'none';
+    document.getElementById('predictionForm').style.display = 'block';
+    document.getElementById('predictionForm').reset();
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+{% endblock %}

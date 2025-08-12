@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - VidhiPath.ai{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h1 style="color: #1e40af; margin-bottom: 0.5rem;">
+        <i class="fas fa-tachometer-alt"></i> Welcome back, {{ session.user_name }}!
+    </h1>
+    <p style="color: #6b7280;">Your legal assistant dashboard - Access all your legal tools and saved content</p>
+</div>
+
+<!-- Statistics Cards -->
+<div class="grid grid-2" style="margin-bottom: 3rem;">
+    <div class="card" style="background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%); color: white;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="font-size: 2rem; margin: 0;">{{ stats.total_chats or 0 }}</h3>
+                <p style="opacity: 0.9; margin: 0;">Legal Conversations</p>
+            </div>
+            <i class="fas fa-comments" style="font-size: 3rem; opacity: 0.3;"></i>
+        </div>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="font-size: 2rem; margin: 0;">{{ stats.total_documents or 0 }}</h3>
+                <p style="opacity: 0.9; margin: 0;">Documents Checked</p>
+            </div>
+            <i class="fas fa-file-check" style="font-size: 3rem; opacity: 0.3;"></i>
+        </div>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: white;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="font-size: 2rem; margin: 0;">{{ stats.total_analyses or 0 }}</h3>
+                <p style="opacity: 0.9; margin: 0;">Case Analyses</p>
+            </div>
+            <i class="fas fa-chart-line" style="font-size: 3rem; opacity: 0.3;"></i>
+        </div>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: white;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="font-size: 1.25rem; margin: 0;">
+                    {{ stats.account_created.strftime('%b %d, %Y') if stats.account_created else 'Unknown' }}
+                </h3>
+                <p style="opacity: 0.9; margin: 0;">Member Since</p>
+            </div>
+            <i class="fas fa-calendar-alt" style="font-size: 3rem; opacity: 0.3;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card" style="margin-bottom: 2rem;">
+    <h2 class="card-title" style="margin-bottom: 1.5rem;">
+        <i class="fas fa-rocket"></i> Quick Actions
+    </h2>
+    
+    <div class="grid grid-3">
+        <a href="{{ url_for('chatbot') }}" class="btn btn-primary" style="padding: 1.5rem; text-align: center; text-decoration: none; display: block;">
+            <i class="fas fa-comments" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+            Start Legal Chat
+            <small style="display: block; opacity: 0.8; font-weight: normal; margin-top: 0.5rem;">
+                Ask legal questions and get instant guidance
+            </small>
+        </a>
+
+        <a href="{{ url_for('document_checker') }}" class="btn btn-secondary" style="padding: 1.5rem; text-align: center; text-decoration: none; display: block;">
+            <i class="fas fa-file-check" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+            Check Document
+            <small style="display: block; opacity: 0.8; font-weight: normal; margin-top: 0.5rem;">
+                Upload and validate legal documents
+            </small>
+        </a>
+
+        <a href="{{ url_for('case_prediction') }}" class="btn" style="background: #d97706; color: white; padding: 1.5rem; text-align: center; text-decoration: none; display: block;">
+            <i class="fas fa-chart-line" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+            Predict Case
+            <small style="display: block; opacity: 0.8; font-weight: normal; margin-top: 0.5rem;">
+                Get case outcome predictions and analysis
+            </small>
+        </a>
+
+        <a href="{{ url_for('case_summary') }}" class="btn" style="background: #7c3aed; color: white; padding: 1.5rem; text-align: center; text-decoration: none; display: block;">
+            <i class="fas fa-file-alt" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+            Generate Summary
+            <small style="display: block; opacity: 0.8; font-weight: normal; margin-top: 0.5rem;">
+                Create summaries of legal documents
+            </small>
+        </a>
+
+        <a href="{{ url_for('knowledge_base') }}" class="btn" style="background: #dc2626; color: white; padding: 1.5rem; text-align: center; text-decoration: none; display: block;">
+            <i class="fas fa-book" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+            Browse Knowledge
+            <small style="display: block; opacity: 0.8; font-weight: normal; margin-top: 0.5rem;">
+                Explore legal FAQs and resources
+            </small>
+        </a>
+
+        <a href="{{ url_for('saved_content') }}" class="btn" style="background: #0891b2; color: white; padding: 1.5rem; text-align: center; text-decoration: none; display: block;">
+            <i class="fas fa-bookmark" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+            View Saved Content
+            <small style="display: block; opacity: 0.8; font-weight: normal; margin-top: 0.5rem;">
+                Access your chat history and documents
+            </small>
+        </a>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="grid grid-2">
+    <div class="card">
+        <h3 class="card-title">
+            <i class="fas fa-clock"></i> Recent Activity
+        </h3>
+        <div id="recentActivity">
+            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                <i class="fas fa-comments" style="color: #1e40af;"></i>
+                <div>
+                    <p style="margin: 0; font-weight: 600;">Legal Chat Sessions</p>
+                    <small style="color: #6b7280;">{{ stats.total_chats or 0 }} conversations completed</small>
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                <i class="fas fa-file-check" style="color: #059669;"></i>
+                <div>
+                    <p style="margin: 0; font-weight: 600;">Document Validations</p>
+                    <small style="color: #6b7280;">{{ stats.total_documents or 0 }} documents processed</small>
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem 0;">
+                <i class="fas fa-chart-line" style="color: #d97706;"></i>
+                <div>
+                    <p style="margin: 0; font-weight: 600;">Case Predictions</p>
+                    <small style="color: #6b7280;">{{ stats.total_analyses or 0 }} analyses completed</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 class="card-title">
+            <i class="fas fa-lightbulb"></i> Quick Tips
+        </h3>
+        <div style="space-y: 1rem;">
+            <div style="padding: 1rem; background: #f0f9ff; border-left: 4px solid #1e40af; margin-bottom: 1rem;">
+                <h4 style="color: #1e40af; margin: 0 0 0.5rem 0;">Legal Chat Best Practices</h4>
+                <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">
+                    Be specific with your questions and provide relevant context for better AI responses.
+                </p>
+            </div>
+            
+            <div style="padding: 1rem; background: #f0fdf4; border-left: 4px solid #059669; margin-bottom: 1rem;">
+                <h4 style="color: #059669; margin: 0 0 0.5rem 0;">Document Checker</h4>
+                <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">
+                    Upload clear, readable documents in PDF, DOCX, or TXT format for accurate validation.
+                </p>
+            </div>
+            
+            <div style="padding: 1rem; background: #fefbf2; border-left: 4px solid #d97706;">
+                <h4 style="color: #d97706; margin: 0 0 0.5rem 0;">Case Prediction</h4>
+                <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">
+                    Provide detailed case information for more accurate outcome predictions and analysis.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,503 @@
+{% extends "base.html" %}
+
+{% block title %}Legal Guidance Chatbot - VidhiPath.ai{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 70vh;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+    }
+
+    .chat-header {
+        background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+        color: white;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        background: #f8fafc;
+    }
+
+    .message {
+        margin-bottom: 1rem;
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .message.user {
+        flex-direction: row-reverse;
+    }
+
+    .message-content {
+        max-width: 70%;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        position: relative;
+    }
+
+    .message.user .message-content {
+        background: #1e40af;
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+
+    .message.bot .message-content {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-bottom-left-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .message.user .message-avatar {
+        background: #1e40af;
+        color: white;
+    }
+
+    .message.bot .message-avatar {
+        background: #059669;
+        color: white;
+    }
+
+    .message-time {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+
+    .chat-input {
+        border-top: 1px solid #e5e7eb;
+        padding: 1rem;
+        background: white;
+    }
+
+    .input-group {
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-end;
+    }
+
+    .chat-input-field {
+        flex: 1;
+        padding: 0.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        resize: none;
+        min-height: 44px;
+        max-height: 120px;
+        font-family: inherit;
+    }
+
+    .chat-input-field:focus {
+        outline: none;
+        border-color: #1e40af;
+        box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+    }
+
+    .send-btn {
+        padding: 0.75rem;
+        background: #1e40af;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .send-btn:hover:not(:disabled) {
+        background: #1e3a8a;
+        transform: translateY(-1px);
+    }
+
+    .send-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        border-bottom-left-radius: 4px;
+        max-width: 70px;
+    }
+
+    .typing-dots {
+        display: flex;
+        gap: 0.25rem;
+    }
+
+    .typing-dot {
+        width: 6px;
+        height: 6px;
+        background: #6b7280;
+        border-radius: 50%;
+        animation: typing 1.5s infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-10px); }
+    }
+
+    .quick-questions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .quick-question {
+        background: #f3f4f6;
+        border: 1px solid #d1d5db;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .quick-question:hover {
+        background: #1e40af;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    @media (max-width: 768px) {
+        .chat-container {
+            height: 60vh;
+        }
+        
+        .message-content {
+            max-width: 85%;
+        }
+        
+        .quick-questions {
+            flex-direction: column;
+        }
+        
+        .quick-question {
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1 class="card-title">
+            <i class="fas fa-comments"></i> Legal Guidance Chatbot
+        </h1>
+        <button onclick="clearChat()" class="btn btn-outline" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
+            <i class="fas fa-trash"></i> Clear Chat
+        </button>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="message-avatar" style="background: #059669;">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div>
+                <h3 style="margin: 0; font-size: 1.1rem;">VidhiPath AI Assistant</h3>
+                <p style="margin: 0; opacity: 0.8; font-size: 0.875rem;">Your legal guidance companion</p>
+            </div>
+            <div style="margin-left: auto;">
+                <span style="display: inline-block; width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-right: 0.5rem;"></span>
+                <span style="font-size: 0.875rem;">Online</span>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-avatar">AI</div>
+                <div>
+                    <div class="message-content">
+                        <p style="margin: 0;">
+                            Hello! I'm your AI legal assistant. I can help you with questions about Indian law, 
+                            including RTI, FIR procedures, property matters, family law, and more. 
+                            How can I assist you today?
+                        </p>
+                    </div>
+                    <div class="message-time">Just now</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input">
+            <div class="quick-questions" id="quickQuestions">
+                <button class="quick-question" onclick="sendQuickQuestion('How to file an FIR?')">
+                    How to file an FIR?
+                </button>
+                <button class="quick-question" onclick="sendQuickQuestion('What is RTI Act?')">
+                    What is RTI Act?
+                </button>
+                <button class="quick-question" onclick="sendQuickQuestion('Property registration process')">
+                    Property registration process
+                </button>
+                <button class="quick-question" onclick="sendQuickQuestion('Domestic violence laws')">
+                    Domestic violence laws
+                </button>
+            </div>
+            
+            <div class="input-group">
+                <textarea 
+                    id="messageInput" 
+                    class="chat-input-field" 
+                    placeholder="Type your legal question here..."
+                    rows="1"
+                ></textarea>
+                <button id="sendBtn" class="send-btn" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 2rem;">
+    <h3 style="color: #1e40af; margin-bottom: 1rem;">
+        <i class="fas fa-info-circle"></i> How to Use the Legal Chatbot
+    </h3>
+    <div class="grid grid-2">
+        <div>
+            <h4 style="color: #059669; margin-bottom: 0.5rem;">Ask Specific Questions</h4>
+            <ul style="color: #6b7280; margin: 0; padding-left: 1.5rem;">
+                <li>Be clear and specific about your legal issue</li>
+                <li>Provide relevant context and details</li>
+                <li>Ask one question at a time for better responses</li>
+            </ul>
+        </div>
+        <div>
+            <h4 style="color: #d97706; margin-bottom: 0.5rem;">Legal Areas Covered</h4>
+            <ul style="color: #6b7280; margin: 0; padding-left: 1.5rem;">
+                <li>Criminal Law (FIR, Police Procedures)</li>
+                <li>Civil Rights (RTI, Consumer Rights)</li>
+                <li>Property Law (Registration, Disputes)</li>
+                <li>Family Law (Marriage, Divorce, Child Rights)</li>
+            </ul>
+        </div>
+    </div>
+    <div style="background: #fef3c7; border-left: 4px solid #d97706; padding: 1rem; margin-top: 1rem; border-radius: 0 8px 8px 0;">
+        <p style="margin: 0; color: #92400e;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Disclaimer:</strong> This AI assistant provides general legal information only. 
+            For specific legal advice, always consult with a qualified lawyer.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let isTyping = false;
+
+// Auto-resize textarea
+document.getElementById('messageInput').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+});
+
+// Send message on Enter (but allow Shift+Enter for new lines)
+document.getElementById('messageInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+function sendQuickQuestion(question) {
+    document.getElementById('messageInput').value = question;
+    sendMessage();
+    // Hide quick questions after first use
+    document.getElementById('quickQuestions').style.display = 'none';
+}
+
+function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const message = input.value.trim();
+    
+    if (!message || isTyping) return;
+    
+    // Add user message
+    addMessage(message, 'user');
+    input.value = '';
+    input.style.height = 'auto';
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    // Send to API
+    sendToAPI(message);
+}
+
+function addMessage(content, type) {
+    const messagesContainer = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}`;
+    
+    const now = new Date();
+    const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    
+    const avatar = type === 'user' ? '{{ session.user_name[0].upper() if session.user_name else "U" }}' : 'AI';
+    
+    messageDiv.innerHTML = `
+        <div class="message-avatar">${avatar}</div>
+        <div>
+            <div class="message-content">
+                <p style="margin: 0;">${content}</p>
+            </div>
+            <div class="message-time">${timeString}</div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function showTypingIndicator() {
+    const messagesContainer = document.getElementById('chatMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message bot';
+    typingDiv.id = 'typingIndicator';
+    
+    typingDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div>
+            <div class="typing-indicator">
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(typingDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    isTyping = true;
+}
+
+function hideTypingIndicator() {
+    const typingIndicator = document.getElementById('typingIndicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+    isTyping = false;
+}
+
+async function sendToAPI(message) {
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        const data = await response.json();
+        
+        hideTypingIndicator();
+        
+        if (data.error) {
+            addMessage('Sorry, I encountered an error processing your request. Please try again.', 'bot');
+        } else {
+            addMessage(data.response, 'bot');
+        }
+    } catch (error) {
+        hideTypingIndicator();
+        addMessage('Sorry, I\'m having trouble connecting. Please check your internet connection and try again.', 'bot');
+    }
+}
+
+function clearChat() {
+    if (confirm('Are you sure you want to clear the chat history?')) {
+        const messagesContainer = document.getElementById('chatMessages');
+        messagesContainer.innerHTML = `
+            <div class="message bot">
+                <div class="message-avatar">AI</div>
+                <div>
+                    <div class="message-content">
+                        <p style="margin: 0;">
+                            Chat cleared! How can I help you with your legal questions today?
+                        </p>
+                    </div>
+                    <div class="message-time">Just now</div>
+                </div>
+            </div>
+        `;
+        
+        // Show quick questions again
+        document.getElementById('quickQuestions').style.display = 'flex';
+    }
+}
+
+// Load chat history on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadChatHistory();
+});
+
+async function loadChatHistory() {
+    try {
+        const response = await fetch('/api/chat/history');
+        const history = await response.json();
+        
+        if (history.length > 0) {
+            // Clear initial message
+            document.getElementById('chatMessages').innerHTML = '';
+            
+            // Add recent messages (limit to last 10)
+            const recentHistory = history.slice(0, 10).reverse();
+            
+            recentHistory.forEach(chat => {
+                addMessage(chat.message, 'user');
+                addMessage(chat.response, 'bot');
+            });
+            
+            // Hide quick questions if there's history
+            document.getElementById('quickQuestions').style.display = 'none';
+        }
+    } catch (error) {
+        console.log('Could not load chat history');
+    }
+}
+</script>
+{% endblock %}

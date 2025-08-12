@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+
+{% block title %}Feedback & Support - VidhiPath.ai{% endblock %}
+
+{% block extra_css %}
+<style>
+    .feedback-header {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: white;
+        padding: 3rem 2rem;
+        margin: -2rem -1.5rem 2rem -1.5rem;
+        border-radius: 0 0 20px 20px;
+        text-align: center;
+    }
+
+    .feedback-form {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .feedback-categories {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .category-card {
+        background: #f8fafc;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .category-card:hover {
+        border-color: #059669;
+        background: #f0fdf4;
+        transform: translateY(-2px);
+    }
+
+    .category-card.selected {
+        border-color: #059669;
+        background: #f0fdf4;
+        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+    }
+
+    .category-icon {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+        color: #059669;
+    }
+
+    .category-title {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .category-description {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .success-message {
+        background: #f0fdf4;
+        border: 2px solid #bbf7d0;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        display: none;
+    }
+
+    .success-message.show {
+        display: block;
+        animation: slideIn 0.5s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .contact-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .contact-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        border-left: 4px solid #e5e7eb;
+    }
+
+    .contact-card.email { border-left-color: #1e40af; }
+    .contact-card.chat { border-left-color: #059669; }
+    .contact-card.faq { border-left-color: #d97706; }
+
+    .contact-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .contact-card.email .contact-icon { color: #1e40af; }
+    .contact-card.chat .contact-icon { color: #059669; }
+    .contact-card.faq .contact-icon { color: #d97706; }
+
+    @media (max-width: 768px) {
+        .feedback-header {
+            padding: 2rem 1rem;
+            margin: -2rem -1rem 2rem -1rem;
+        }
+        
+        .feedback-form {
+            padding: 1.5rem;
+        }
+        
+        .feedback-categories {
+            grid-template-columns: 1fr;
+        }
+        
+        .contact-options {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="feedback-header">
+    <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">
+        <i class="fas fa-comment-dots"></i> Feedback & Support
+    </h1>
+    <p style="font-size: 1.2rem; opacity: 0.9; margin: 0;">
+        Help us improve VidhiPath.ai by sharing your thoughts, suggestions, or reporting issues
+    </p>
+</div>
+
+<div class="feedback-form" id="feedbackForm">
+    <h2 style="color: #374151; margin-bottom: 1.5rem; text-align: center;">
+        <i class="fas fa-paper-plane"></i> Submit Your Feedback
+    </h2>
+
+    <div class="feedback-categories">
+        <div class="category-card" onclick="selectCategory('suggestion')">
+            <div class="category-icon">
+                <i class="fas fa-lightbulb"></i>
+            </div>
+            <div class="category-title">Suggestion</div>
+            <div class="category-description">Ideas for new features or improvements</div>
+        </div>
+
+        <div class="category-card" onclick="selectCategory('bug')">
+            <div class="category-icon">
+                <i class="fas fa-bug"></i>
+            </div>
+            <div class="category-title">Bug Report</div>
+            <div class="category-description">Report technical issues or errors</div>
+        </div>
+
+        <div class="category-card" onclick="selectCategory('content')">
+            <div class="category-icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <div class="category-title">Content Feedback</div>
+            <div class="category-description">Legal information accuracy or updates</div>
+        </div>
+
+        <div class="category-card" onclick="selectCategory('general')">
+            <div class="category-icon">
+                <i class="fas fa-comment"></i>
+            </div>
+            <div class="category-title">General Feedback</div>
+            <div class="category-description">Overall experience and comments</div>
+        </div>
+    </div>
+
+    <form id="submitFeedbackForm">
+        <input type="hidden" id="feedbackCategory" name="category" value="">
+        
+        <div class="form-group">
+            <label for="feedbackMessage" class="form-label">Your Message</label>
+            <textarea 
+                id="feedbackMessage" 
+                name="message" 
+                class="form-input form-textarea" 
+                placeholder="Please describe your feedback in detail. The more information you provide, the better we can help you..."
+                required
+                style="min-height: 150px;"
+            ></textarea>
+            <small style="color: #6b7280; font-size: 0.875rem;">
+                Minimum 10 characters required
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="checkbox" id="allowContact" style="width: auto;">
+                <span style="color: #6b7280; font-size: 0.875rem;">
+                    Allow us to contact you for follow-up questions (optional)
+                </span>
+            </label>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <button type="submit" id="submitBtn" class="btn btn-secondary" style="padding: 1rem 2rem; font-size: 1.1rem;">
+                <i class="fas fa-paper-plane"></i> Submit Feedback
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="success-message" id="successMessage">
+    <i class="fas fa-check-circle" style="font-size: 3rem; color: #059669; margin-bottom: 1rem;"></i>
+    <h3 style="color: #065f46; margin-bottom: 1rem;">Thank You for Your Feedback!</h3>
+    <p style="color: #047857; margin-bottom: 1.5rem;">
+        Your feedback has been submitted successfully. We appreciate you taking the time to help us improve VidhiPath.ai.
+    </p>
+    <button onclick="submitAnotherFeedback()" class="btn btn-outline">
+        <i class="fas fa-plus"></i> Submit Another Feedback
+    </button>
+</div>
+
+<div class="card">
+    <h3 style="color: #374151; margin-bottom: 1.5rem; text-align: center;">
+        <i class="fas fa-headset"></i> Other Ways to Get Help
+    </h3>
+    
+    <div class="contact-options">
+        <div class="contact-card email">
+            <div class="contact-icon">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <h4 style="color: #1e40af; margin-bottom: 0.5rem;">Email Support</h4>
+            <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.875rem;">
+                Get detailed help via email
+            </p>
+            <a href="mailto:support@vidhipath.ai" class="btn btn-outline" style="font-size: 0.875rem;">
+                support@vidhipath.ai
+            </a>
+        </div>
+
+        <div class="contact-card chat">
+            <div class="contact-icon">
+                <i class="fas fa-comments"></i>
+            </div>
+            <h4 style="color: #059669; margin-bottom: 0.5rem;">AI Assistant</h4>
+            <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.875rem;">
+                Get instant help from our AI
+            </p>
+            <a href="{{ url_for('chatbot') }}" class="btn btn-secondary" style="font-size: 0.875rem;">
+                <i class="fas fa-robot"></i> Start Chat
+            </a>
+        </div>
+
+        <div class="contact-card faq">
+            <div class="contact-icon">
+                <i class="fas fa-question-circle"></i>
+            </div>
+            <h4 style="color: #d97706; margin-bottom: 0.5rem;">Knowledge Base</h4>
+            <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.875rem;">
+                Browse common questions
+            </p>
+            <a href="{{ url_for('knowledge_base') }}" class="btn" style="background: #d97706; color: white; font-size: 0.875rem;">
+                <i class="fas fa-book"></i> Browse FAQs
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 2rem;">
+    <h3 style="color: #374151; margin-bottom: 1rem;">
+        <i class="fas fa-info-circle"></i> Feedback Guidelines
+    </h3>
+    
+    <div class="grid grid-2">
+        <div>
+            <h4 style="color: #059669; margin-bottom: 0.5rem;">What to Include</h4>
+            <ul style="color: #6b7280; margin: 0; padding-left: 1.5rem;">
+                <li>Specific details about the issue or suggestion</li>
+                <li>Steps to reproduce any problems</li>
+                <li>Your browser and device information (if relevant)</li>
+                <li>Screenshots or examples (if applicable)</li>
+            </ul>
+        </div>
+        
+        <div>
+            <h4 style="color: #d97706; margin-bottom: 0.5rem;">Response Time</h4>
+            <ul style="color: #6b7280; margin: 0; padding-left: 1.5rem;">
+                <li>Bug reports: Within 24-48 hours</li>
+                <li>Feature suggestions: Within 1 week</li>
+                <li>General feedback: Within 3-5 business days</li>
+                <li>Urgent issues: Use email for faster response</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 1rem; margin-top: 1rem; border-radius: 0 8px 8px 0;">
+        <p style="margin: 0; color: #1e40af;">
+            <i class="fas fa-shield-alt"></i>
+            <strong>Privacy:</strong> Your feedback is confidential and will only be used to improve our services. 
+            We do not share your information with third parties.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedCategory = '';
+
+function selectCategory(category) {
+    // Remove previous selection
+    document.querySelectorAll('.category-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Select new category
+    event.currentTarget.classList.add('selected');
+    selectedCategory = category;
+    document.getElementById('feedbackCategory').value = category;
+    
+    // Update placeholder text based on category
+    const textarea = document.getElementById('feedbackMessage');
+    const placeholders = {
+        'suggestion': 'Please describe your feature suggestion or improvement idea. What would you like to see added or changed in VidhiPath.ai?',
+        'bug': 'Please describe the bug or technical issue you encountered. Include steps to reproduce the problem and any error messages you saw.',
+        'content': 'Please let us know about any legal information that needs updating, correction, or improvement. Specify the section or topic.',
+        'general': 'Please share your overall experience with VidhiPath.ai. What do you like? What could be better?'
+    };
+    
+    textarea.placeholder = placeholders[category] || textarea.placeholder;
+}
+
+document.getElementById('submitFeedbackForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const message = document.getElementById('feedbackMessage').value.trim();
+    
+    if (!selectedCategory) {
+        alert('Please select a feedback category first.');
+        return;
+    }
+    
+    if (message.length < 10) {
+        alert('Please provide at least 10 characters in your message.');
+        return;
+    }
+    
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.innerHTML = '<div class="loading"></div> Submitting...';
+    submitBtn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/submit-feedback', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                category: selectedCategory,
+                message: message,
+                allow_contact: document.getElementById('allowContact').checked
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            // Show success message
+            document.getElementById('feedbackForm').style.display = 'none';
+            document.getElementById('successMessage').classList.add('show');
+            
+            // Scroll to success message
+            document.getElementById('successMessage').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+    } catch (error) {
+        alert('Error submitting feedback. Please try again or contact support directly.');
+    } finally {
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback';
+        submitBtn.disabled = false;
+    }
+});
+
+function submitAnotherFeedback() {
+    // Reset form
+    document.getElementById('submitFeedbackForm').reset();
+    document.getElementById('feedbackCategory').value = '';
+    selectedCategory = '';
+    
+    // Remove category selection
+    document.querySelectorAll('.category-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Reset placeholder
+    document.getElementById('feedbackMessage').placeholder = 'Please describe your feedback in detail. The more information you provide, the better we can help you...';
+    
+    // Show form and hide success message
+    document.getElementById('successMessage').classList.remove('show');
+    document.getElementById('feedbackForm').style.display = 'block';
+    
+    // Scroll to form
+    document.getElementById('feedbackForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Character counter
+document.getElementById('feedbackMessage').addEventListener('input', function() {
+    const length = this.value.length;
+    const minLength = 10;
+    
+    // Could add a character counter here
+    if (length > 0 && length < minLength) {
+        this.style.borderColor = '#f59e0b';
+    } else if (length >= minLength) {
+        this.style.borderColor = '#10b981';
+    } else {
+        this.style.borderColor = '#d1d5db';
+    }
+});
+</script>
+{% endblock %}

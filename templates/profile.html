@@ -1,0 +1,460 @@
+{% extends "base.html" %}
+
+{% block title %}Profile Settings - VidhiPath.ai{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+        color: white;
+        padding: 2rem;
+        margin: -2rem -1.5rem 2rem -1.5rem;
+        border-radius: 0 0 20px 20px;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 auto 1rem;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .profile-sections {
+        display: grid;
+        gap: 2rem;
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .section-header {
+        background: #f8fafc;
+        padding: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .section-title {
+        margin: 0;
+        color: #374151;
+        font-size: 1.25rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-content {
+        padding: 1.5rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #6b7280;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .info-value {
+        color: #374151;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .edit-form {
+        display: none;
+    }
+
+    .edit-form.active {
+        display: block;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .danger-zone {
+        border: 2px solid #fee2e2;
+        border-radius: 8px;
+        padding: 1.5rem;
+        background: #fef2f2;
+    }
+
+    .danger-title {
+        color: #dc2626;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .danger-description {
+        color: #7f1d1d;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-danger {
+        background: #dc2626;
+        color: white;
+        border: 2px solid #dc2626;
+    }
+
+    .btn-danger:hover {
+        background: #b91c1c;
+        border-color: #b91c1c;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .stat-card {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e40af;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    @media (max-width: 768px) {
+        .profile-header {
+            padding: 1.5rem 1rem;
+            margin: -2rem -1rem 2rem -1rem;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-header">
+    <div class="profile-avatar">
+        {{ user.name[0].upper() if user.name else 'U' }}
+    </div>
+    <h1 style="margin: 0 0 0.5rem 0; font-size: 1.75rem;">{{ user.name }}</h1>
+    <p style="margin: 0; opacity: 0.9;">{{ user.email }}</p>
+    <p style="margin: 0.5rem 0 0 0; opacity: 0.8; font-size: 0.875rem;">
+        Member since {{ user.creation_date.strftime('%B %Y') if user.creation_date else 'Unknown' }}
+    </p>
+</div>
+
+<div class="profile-sections">
+    <!-- Account Information -->
+    <div class="section-card">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-user"></i>
+                Account Information
+            </h2>
+        </div>
+        <div class="section-content">
+            <div class="info-view" id="infoView">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Full Name</span>
+                        <span class="info-value">{{ user.name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email Address</span>
+                        <span class="info-value">{{ user.email }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Account Role</span>
+                        <span class="info-value">{{ user.role.title() }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Last Login</span>
+                        <span class="info-value">
+                            {{ user.last_login.strftime('%B %d, %Y at %I:%M %p') if user.last_login else 'Never' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem;">
+                    <button onclick="toggleEditMode()" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </button>
+                </div>
+            </div>
+
+            <div class="edit-form" id="editForm">
+                <form id="profileForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editName" class="form-label">Full Name</label>
+                            <input type="text" id="editName" name="name" class="form-input" value="{{ user.name }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editEmail" class="form-label">Email Address</label>
+                            <input type="email" id="editEmail" class="form-input" value="{{ user.email }}" disabled>
+                            <small style="color: #6b7280; font-size: 0.875rem;">Email cannot be changed</small>
+                        </div>
+                    </div>
+
+                    <h4 style="color: #374151; margin: 2rem 0 1rem 0;">Change Password (Optional)</h4>
+                    
+                    <div class="form-group">
+                        <label for="currentPassword" class="form-label">Current Password</label>
+                        <input type="password" id="currentPassword" name="current_password" class="form-input">
+                        <small style="color: #6b7280; font-size: 0.875rem;">Required only if changing password</small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newPassword" class="form-label">New Password</label>
+                            <input type="password" id="newPassword" name="new_password" class="form-input" minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                            <input type="password" id="confirmPassword" name="confirm_password" class="form-input" minlength="6">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" id="saveBtn" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                        <button type="button" onclick="cancelEdit()" class="btn btn-outline">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Usage Statistics -->
+    <div class="section-card">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-chart-bar"></i>
+                Usage Statistics
+            </h2>
+        </div>
+        <div class="section-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.total_chats or 0 }}</div>
+                    <div class="stat-label">Legal Chats</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.total_documents or 0 }}</div>
+                    <div class="stat-label">Documents Checked</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.total_analyses or 0 }}</div>
+                    <div class="stat-label">Case Analyses</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">
+                        {{ ((stats.account_created.now() - stats.account_created).days if stats.account_created else 0) }}
+                    </div>
+                    <div class="stat-label">Days Active</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-card">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-bolt"></i>
+                Quick Actions
+            </h2>
+        </div>
+        <div class="section-content">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <a href="{{ url_for('saved_content') }}" class="btn btn-outline" style="text-decoration: none; text-align: center;">
+                    <i class="fas fa-bookmark"></i> View Saved Content
+                </a>
+                <a href="{{ url_for('feedback') }}" class="btn btn-outline" style="text-decoration: none; text-align: center;">
+                    <i class="fas fa-comment"></i> Submit Feedback
+                </a>
+                <a href="{{ url_for('knowledge_base') }}" class="btn btn-outline" style="text-decoration: none; text-align: center;">
+                    <i class="fas fa-book"></i> Browse Knowledge Base
+                </a>
+                <a href="{{ url_for('chatbot') }}" class="btn btn-primary" style="text-decoration: none; text-align: center;">
+                    <i class="fas fa-comments"></i> Start Legal Chat
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Management -->
+    <div class="section-card">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-cog"></i>
+                Account Management
+            </h2>
+        </div>
+        <div class="section-content">
+            <div class="danger-zone">
+                <div class="danger-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Danger Zone
+                </div>
+                <div class="danger-description">
+                    Once you delete your account, there is no going back. This will permanently delete your account and remove all your data from our servers.
+                </div>
+                <button onclick="confirmDeleteAccount()" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Delete Account
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleEditMode() {
+    document.getElementById('infoView').style.display = 'none';
+    document.getElementById('editForm').classList.add('active');
+}
+
+function cancelEdit() {
+    document.getElementById('editForm').classList.remove('active');
+    document.getElementById('infoView').style.display = 'block';
+    
+    // Reset form
+    document.getElementById('profileForm').reset();
+    document.getElementById('editName').value = '{{ user.name }}';
+}
+
+document.getElementById('profileForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const newPassword = formData.get('new_password');
+    const confirmPassword = formData.get('confirm_password');
+    
+    // Validate password confirmation
+    if (newPassword && newPassword !== confirmPassword) {
+        alert('New passwords do not match!');
+        return;
+    }
+    
+    // Validate current password if changing password
+    if (newPassword && !formData.get('current_password')) {
+        alert('Current password is required to change password!');
+        return;
+    }
+    
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.innerHTML = '<div class="loading"></div> Saving...';
+    saveBtn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/update-profile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: formData.get('name'),
+                current_password: formData.get('current_password'),
+                new_password: newPassword
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            alert('Profile updated successfully!');
+            location.reload(); // Refresh to show updated info
+        }
+        
+    } catch (error) {
+        alert('Error updating profile. Please try again.');
+    } finally {
+        saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+        saveBtn.disabled = false;
+    }
+});
+
+function confirmDeleteAccount() {
+    const confirmation = prompt('This action cannot be undone. Type "DELETE" to confirm account deletion:');
+    
+    if (confirmation === 'DELETE') {
+        if (confirm('Are you absolutely sure? This will permanently delete your account and all your data.')) {
+            alert('Account deletion feature will be implemented soon. Please contact support for now.');
+            // Implementation would make API call to delete account
+        }
+    } else if (confirmation !== null) {
+        alert('Account deletion cancelled. You must type "DELETE" exactly to confirm.');
+    }
+}
+
+// Auto-save draft changes
+let saveTimeout;
+document.querySelectorAll('#editForm input').forEach(input => {
+    input.addEventListener('input', function() {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            // Could save draft to localStorage
+            console.log('Draft saved');
+        }, 2000);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Login - VidhiPath.ai{% endblock %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 2rem auto;">
+    <div class="card">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <i class="fas fa-sign-in-alt" style="font-size: 3rem; color: #1e40af; margin-bottom: 1rem;"></i>
+            <h2 style="color: #1e40af; margin: 0;">Login to Your Account</h2>
+            <p style="color: #6b7280; margin-top: 0.5rem;">Access your legal assistant dashboard</p>
+        </div>
+
+        <form method="POST" id="loginForm">
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" id="email" name="email" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" name="password" class="form-input" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i>
+                Sign In
+            </button>
+
+        </form>
+        <div style="text-align: right; margin-top: 0.5rem;">
+            <a href="{{ url_for('forgot_password') }}" style="color: #1e40af; text-decoration: underline;">Forgot Password?</a>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e5e7eb;">
+            <p style="color: #6b7280; margin-bottom: 1rem;">Don't have an account?</p>
+            <a href="{{ url_for('signup') }}" class="btn btn-outline" style="width: 100%; justify-content: center;">
+                <i class="fas fa-user-plus"></i>
+                Create New Account
+            </a>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 1rem;">
+        <a href="{{ url_for('index') }}" style="color: #6b7280; text-decoration: none;">
+            <i class="fas fa-arrow-left"></i> Back to Home
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    const btn = document.getElementById('loginBtn');
+    btn.innerHTML = '<div class="loading"></div> Signing In...';
+    btn.disabled = true;
+});
+</script>
+{% endblock %}

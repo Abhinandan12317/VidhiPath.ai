@@ -1,0 +1,500 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Document Checker - VidhiPath.ai{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 12px;
+        padding: 3rem 2rem;
+        text-align: center;
+        background: #f9fafb;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .upload-area:hover {
+        border-color: #1e40af;
+        background: #f0f9ff;
+    }
+
+    .upload-area.dragover {
+        border-color: #059669;
+        background: #f0fdf4;
+    }
+
+    .file-info {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        display: none;
+    }
+
+    .validation-result {
+        margin-top: 2rem;
+        display: none;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .status-valid {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-issues {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-invalid {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .issues-list {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 1rem;
+        border-radius: 0 8px 8px 0;
+        margin-top: 1rem;
+    }
+
+    .issues-list ul {
+        margin: 0.5rem 0 0 0;
+        padding-left: 1.5rem;
+    }
+
+    .issues-list li {
+        color: #92400e;
+        margin-bottom: 0.5rem;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 6px;
+        background: #e5e7eb;
+        border-radius: 3px;
+        margin: 1rem 0;
+        overflow: hidden;
+        display: none;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #1e40af, #059669);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    .supported-formats {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .format-badge {
+        background: #f3f4f6;
+        color: #6b7280;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .upload-area {
+            padding: 2rem 1rem;
+        }
+        
+        .supported-formats {
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1 class="card-title">
+            <i class="fas fa-file-check"></i> Smart Document Checker
+        </h1>
+    </div>
+
+    <p style="color: #6b7280; margin-bottom: 2rem;">
+        Upload your legal documents to check for format correctness, missing details, and potential issues. 
+        Our AI will analyze your document and provide detailed validation results.
+    </p>
+
+    <form id="documentForm" enctype="multipart/form-data">
+        <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+            <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #6b7280; margin-bottom: 1rem;"></i>
+            <h3 style="color: #374151; margin-bottom: 0.5rem;">Click to upload or drag and drop</h3>
+            <p style="color: #6b7280; margin-bottom: 1rem;">
+                Upload your legal document for validation
+            </p>
+            
+            <div class="supported-formats">
+                <span class="format-badge">PDF</span>
+                <span class="format-badge">DOCX</span>
+                <span class="format-badge">DOC</span>
+                <span class="format-badge">TXT</span>
+            </div>
+            
+            <input type="file" id="fileInput" name="file" accept=".pdf,.docx,.doc,.txt" style="display: none;" onchange="handleFileSelect(event)">
+        </div>
+
+        <div class="file-info" id="fileInfo">
+            <div style="display: flex; justify-content: between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <i class="fas fa-file" id="fileIcon" style="font-size: 2rem; color: #6b7280;"></i>
+                    <div>
+                        <h4 id="fileName" style="margin: 0; color: #374151;"></h4>
+                        <p id="fileSize" style="margin: 0; color: #6b7280; font-size: 0.875rem;"></p>
+                    </div>
+                </div>
+                <button type="button" onclick="removeFile()" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.25rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <button type="submit" id="submitBtn" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;" disabled>
+                <i class="fas fa-search"></i> Validate Document
+            </button>
+        </div>
+    </form>
+
+    <div class="validation-result" id="validationResult">
+        <div class="card" style="border: 2px solid #e5e7eb;">
+            <h3 style="color: #1e40af; margin-bottom: 1rem;">
+                <i class="fas fa-clipboard-check"></i> Validation Results
+            </h3>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div>
+                    <h4 id="resultFileName" style="margin: 0; color: #374151;"></h4>
+                    <p id="resultTimestamp" style="margin: 0; color: #6b7280; font-size: 0.875rem;"></p>
+                </div>
+                <div id="statusBadge" class="status-badge"></div>
+            </div>
+
+            <div id="summarySection">
+                <h4 style="color: #374151; margin-bottom: 0.5rem;">Summary</h4>
+                <p id="summaryText" style="color: #6b7280; margin-bottom: 1rem;"></p>
+            </div>
+
+            <div id="issuesSection" style="display: none;">
+                <div class="issues-list">
+                    <h4 style="color: #92400e; margin: 0 0 0.5rem 0;">
+                        <i class="fas fa-exclamation-triangle"></i> Issues Found
+                    </h4>
+                    <ul id="issuesList"></ul>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <button onclick="checkAnotherDocument()" class="btn btn-outline">
+                    <i class="fas fa-plus"></i> Check Another Document
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 2rem;">
+    <h3 style="color: #1e40af; margin-bottom: 1rem;">
+        <i class="fas fa-info-circle"></i> Document Validation Guidelines
+    </h3>
+    
+    <div class="grid grid-2">
+        <div>
+            <h4 style="color: #059669; margin-bottom: 0.5rem;">What We Check</h4>
+            <ul style="color: #6b7280; margin: 0; padding-left: 1.5rem;">
+                <li>Document structure and format</li>
+                <li>Required legal elements (signatures, dates, witnesses)</li>
+                <li>Clause completeness and consistency</li>
+                <li>Standard legal document patterns</li>
+            </ul>
+        </div>
+        
+        <div>
+            <h4 style="color: #d97706; margin-bottom: 0.5rem;">Best Practices</h4>
+            <ul style="color: #6b7280; margin: 0; padding-left: 1.5rem;">
+                <li>Upload clear, readable documents</li>
+                <li>Ensure text is not password protected</li>
+                <li>Use standard legal document formats</li>
+                <li>Include all relevant pages and sections</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 1rem; margin-top: 1rem; border-radius: 0 8px 8px 0;">
+        <p style="margin: 0; color: #991b1b;">
+            <i class="fas fa-shield-alt"></i>
+            <strong>Privacy Notice:</strong> Your documents are processed securely and are not stored permanently. 
+            Only validation results are saved for your reference.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedFile = null;
+
+// Drag and drop functionality
+const uploadArea = document.getElementById('uploadArea');
+
+uploadArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        handleFile(files[0]);
+    }
+});
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        handleFile(file);
+    }
+}
+
+function handleFile(file) {
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword', 'text/plain'];
+    const allowedExtensions = ['.pdf', '.docx', '.doc', '.txt'];
+    
+    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+    
+    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+        alert('Please upload a valid document file (PDF, DOCX, DOC, or TXT)');
+        return;
+    }
+    
+    // Validate file size (16MB max)
+    if (file.size > 16 * 1024 * 1024) {
+        alert('File size must be less than 16MB');
+        return;
+    }
+    
+    selectedFile = file;
+    displayFileInfo(file);
+}
+
+function displayFileInfo(file) {
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const fileIcon = document.getElementById('fileIcon');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    fileName.textContent = file.name;
+    fileSize.textContent = formatFileSize(file.size);
+    
+    // Set appropriate icon
+    const extension = file.name.split('.').pop().toLowerCase();
+    switch(extension) {
+        case 'pdf':
+            fileIcon.className = 'fas fa-file-pdf';
+            fileIcon.style.color = '#dc2626';
+            break;
+        case 'docx':
+        case 'doc':
+            fileIcon.className = 'fas fa-file-word';
+            fileIcon.style.color = '#1e40af';
+            break;
+        case 'txt':
+            fileIcon.className = 'fas fa-file-alt';
+            fileIcon.style.color = '#6b7280';
+            break;
+        default:
+            fileIcon.className = 'fas fa-file';
+            fileIcon.style.color = '#6b7280';
+    }
+    
+    fileInfo.style.display = 'block';
+    submitBtn.disabled = false;
+}
+
+function removeFile() {
+    selectedFile = null;
+    document.getElementById('fileInfo').style.display = 'none';
+    document.getElementById('fileInput').value = '';
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('validationResult').style.display = 'none';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Form submission
+document.getElementById('documentForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    if (!selectedFile) {
+        alert('Please select a file to upload');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    
+    // Show progress and disable button
+    submitBtn.innerHTML = '<div class="loading"></div> Validating...';
+    submitBtn.disabled = true;
+    progressBar.style.display = 'block';
+    
+    // Animate progress
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress > 90) progress = 90;
+        progressFill.style.width = progress + '%';
+    }, 200);
+    
+    try {
+        const response = await fetch('/api/check-document', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        // Complete progress
+        clearInterval(progressInterval);
+        progressFill.style.width = '100%';
+        
+        setTimeout(() => {
+            progressBar.style.display = 'none';
+            progressFill.style.width = '0%';
+            
+            if (data.error) {
+                alert('Error: ' + data.error);
+            } else {
+                displayValidationResult(data);
+            }
+            
+            // Reset button
+            submitBtn.innerHTML = '<i class="fas fa-search"></i> Validate Document';
+            submitBtn.disabled = false;
+        }, 500);
+        
+    } catch (error) {
+        clearInterval(progressInterval);
+        progressBar.style.display = 'none';
+        progressFill.style.width = '0%';
+        
+        alert('Error validating document. Please try again.');
+        
+        submitBtn.innerHTML = '<i class="fas fa-search"></i> Validate Document';
+        submitBtn.disabled = false;
+    }
+});
+
+function displayValidationResult(data) {
+    const resultSection = document.getElementById('validationResult');
+    const resultFileName = document.getElementById('resultFileName');
+    const resultTimestamp = document.getElementById('resultTimestamp');
+    const statusBadge = document.getElementById('statusBadge');
+    const summaryText = document.getElementById('summaryText');
+    const issuesSection = document.getElementById('issuesSection');
+    const issuesList = document.getElementById('issuesList');
+    
+    // Set file info
+    resultFileName.textContent = data.filename;
+    resultTimestamp.textContent = 'Validated on ' + new Date(data.timestamp).toLocaleString();
+    
+    // Set status
+    const validation = data.validation_result;
+    const status = validation.status;
+    
+    statusBadge.className = 'status-badge';
+    if (status === 'valid') {
+        statusBadge.classList.add('status-valid');
+        statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> Valid Document';
+    } else if (status === 'issues_found') {
+        statusBadge.classList.add('status-issues');
+        statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Issues Found';
+    } else {
+        statusBadge.classList.add('status-invalid');
+        statusBadge.innerHTML = '<i class="fas fa-times-circle"></i> Invalid Document';
+    }
+    
+    // Set summary
+    summaryText.textContent = validation.summary;
+    
+    // Set issues
+    if (validation.issues && validation.issues.length > 0) {
+        issuesSection.style.display = 'block';
+        issuesList.innerHTML = '';
+        
+        validation.issues.forEach(issue => {
+            const li = document.createElement('li');
+            li.textContent = issue;
+            issuesList.appendChild(li);
+        });
+    } else {
+        issuesSection.style.display = 'none';
+    }
+    
+    resultSection.style.display = 'block';
+    
+    // Scroll to results
+    resultSection.scrollIntoView({ behavior: 'smooth' });
+}
+
+function checkAnotherDocument() {
+    removeFile();
+    document.getElementById('validationResult').style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+{% endblock %}

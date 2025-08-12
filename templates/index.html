@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}VidhiPath.ai - AI-Powered Legal Assistant{% endblock %}
+
+{% block content %}
+<div class="hero-section" style="background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%); color: white; padding: 4rem 0; margin: -2rem -1rem 3rem -1rem; text-align: center;">
+    <div class="container">
+        <h1 style="font-size: 3rem; font-weight: 700; margin-bottom: 1rem;">
+            <i class="fas fa-balance-scale" style="color: #d97706;"></i>
+            VidhiPath.ai
+        </h1>
+        <p style="font-size: 1.25rem; margin-bottom: 2rem; opacity: 0.9;">
+            Your AI-powered legal assistant for Indian law - Get instant legal guidance, document validation, and case analysis
+        </p>
+        {% if not session.user_id %}
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="{{ url_for('signup') }}" class="btn btn-primary" style="background: #d97706; padding: 1rem 2rem; font-size: 1.1rem;">
+                    <i class="fas fa-rocket"></i> Get Started Free
+                </a>
+                <a href="{{ url_for('knowledge_base') }}" class="btn btn-outline" style="border-color: white; color: white; padding: 1rem 2rem; font-size: 1.1rem;">
+                    <i class="fas fa-book"></i> Browse Legal Knowledge
+                </a>
+            </div>
+        {% else %}
+            <a href="{{ url_for('dashboard') }}" class="btn" style="background: #d97706; color: white; padding: 1rem 2rem; font-size: 1.1rem;">
+                <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="features-section">
+    <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 3rem; color: #1e40af;">
+        Comprehensive Legal Technology Platform
+    </h2>
+    
+    <div class="grid grid-3">
+        <div class="card">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <i class="fas fa-comments" style="font-size: 3rem; color: #1e40af; margin-bottom: 1rem;"></i>
+            </div>
+            <h3 class="text-center" style="color: #1e40af; margin-bottom: 1rem;">Legal Guidance Chatbot</h3>
+            <p style="text-align: center; color: #6b7280;">
+                Ask legal questions in plain English and get instant answers based on Indian law. 
+                Our AI assistant provides helpful guidance for various legal matters.
+            </p>
+            {% if session.user_id %}
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <a href="{{ url_for('chatbot') }}" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Start Chat
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <i class="fas fa-file-check" style="font-size: 3rem; color: #059669; margin-bottom: 1rem;"></i>
+            </div>
+            <h3 class="text-center" style="color: #059669; margin-bottom: 1rem;">Smart Document Checker</h3>
+            <p style="text-align: center; color: #6b7280;">
+                Upload legal documents to check for format correctness, missing details, 
+                and potential issues. Get detailed validation reports instantly.
+            </p>
+            {% if session.user_id %}
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <a href="{{ url_for('document_checker') }}" class="btn btn-secondary">
+                        <i class="fas fa-upload"></i> Check Document
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <i class="fas fa-chart-line" style="font-size: 3rem; color: #d97706; margin-bottom: 1rem;"></i>
+            </div>
+            <h3 class="text-center" style="color: #d97706; margin-bottom: 1rem;">Case Prediction Engine</h3>
+            <p style="text-align: center; color: #6b7280;">
+                Enter case details to get predictions about outcome probability, 
+                estimated duration, and recommended jurisdiction for your legal matter.
+            </p>
+            {% if session.user_id %}
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <a href="{{ url_for('case_prediction') }}" class="btn" style="background: #d97706; color: white;">
+                        <i class="fas fa-crystal-ball"></i> Predict Case
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <i class="fas fa-file-alt" style="font-size: 3rem; color: #7c3aed; margin-bottom: 1rem;"></i>
+            </div>
+            <h3 class="text-center" style="color: #7c3aed; margin-bottom: 1rem;">Case Summary Generator</h3>
+            <p style="text-align: center; color: #6b7280;">
+                Transform complex legal documents and case details into clear, 
+                easy-to-understand summaries for better comprehension.
+            </p>
+            {% if session.user_id %}
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <a href="{{ url_for('case_summary') }}" class="btn" style="background: #7c3aed; color: white;">
+                        <i class="fas fa-compress"></i> Generate Summary
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <i class="fas fa-book" style="font-size: 3rem; color: #dc2626; margin-bottom: 1rem;"></i>
+            </div>
+            <h3 class="text-center" style="color: #dc2626; margin-bottom: 1rem;">Legal Knowledge Repository</h3>
+            <p style="text-align: center; color: #6b7280;">
+                Browse comprehensive FAQs covering RTI, FIR, Property Rights, 
+                Women & Child Rights, and other important legal topics.
+            </p>
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <a href="{{ url_for('knowledge_base') }}" class="btn" style="background: #dc2626; color: white;">
+                    <i class="fas fa-search"></i> Browse Knowledge
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <i class="fas fa-bookmark" style="font-size: 3rem; color: #0891b2; margin-bottom: 1rem;"></i>
+            </div>
+            <h3 class="text-center" style="color: #0891b2; margin-bottom: 1rem;">Saved Content Management</h3>
+            <p style="text-align: center; color: #6b7280;">
+                Access your chat history, uploaded documents, case analyses, 
+                and summaries in one organized dashboard for future reference.
+            </p>
+            {% if session.user_id %}
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <a href="{{ url_for('saved_content') }}" class="btn" style="background: #0891b2; color: white;">
+                        <i class="fas fa-folder-open"></i> View Saved Content
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div style="background: #f8fafc; margin: 3rem -1rem -2rem -1rem; padding: 3rem 1rem;">
+    <div class="container">
+        <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+            <h2 style="font-size: 2rem; color: #1e40af; margin-bottom: 1rem;">
+                Why Choose VidhiPath.ai?
+            </h2>
+            <div class="grid grid-2" style="margin-top: 2rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem;">
+                    <i class="fas fa-shield-alt" style="font-size: 2rem; color: #059669;"></i>
+                    <div>
+                        <h4 style="color: #1e40af; margin-bottom: 0.5rem;">Secure & Private</h4>
+                        <p style="color: #6b7280; margin: 0;">Your legal data is protected with enterprise-grade security</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem;">
+                    <i class="fas fa-lightning-bolt" style="font-size: 2rem; color: #d97706;"></i>
+                    <div>
+                        <h4 style="color: #1e40af; margin-bottom: 0.5rem;">Instant Results</h4>
+                        <p style="color: #6b7280; margin: 0;">Get immediate legal guidance and document analysis</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem;">
+                    <i class="fas fa-map-marked-alt" style="font-size: 2rem; color: #7c3aed;"></i>
+                    <div>
+                        <h4 style="color: #1e40af; margin-bottom: 0.5rem;">Indian Law Focused</h4>
+                        <p style="color: #6b7280; margin: 0;">Specialized in Indian legal framework and regulations</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem;">
+                    <i class="fas fa-users" style="font-size: 2rem; color: #dc2626;"></i>
+                    <div>
+                        <h4 style="color: #1e40af; margin-bottom: 0.5rem;">User-Friendly</h4>
+                        <p style="color: #6b7280; margin: 0;">Simple interface designed for everyone, not just lawyers</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if not session.user_id %}
+<div style="text-align: center; padding: 3rem 0;">
+    <h2 style="color: #1e40af; margin-bottom: 1rem;">Ready to Get Started?</h2>
+    <p style="color: #6b7280; margin-bottom: 2rem; font-size: 1.1rem;">
+        Join thousands of users who trust VidhiPath.ai for their legal needs
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('signup') }}" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">
+            <i class="fas fa-user-plus"></i> Create Free Account
+        </a>
+        <a href="{{ url_for('login') }}" class="btn btn-outline" style="padding: 1rem 2rem; font-size: 1.1rem;">
+            <i class="fas fa-sign-in-alt"></i> Login to Existing Account
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
