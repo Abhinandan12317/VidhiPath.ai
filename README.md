@@ -144,7 +144,7 @@ VidhiPath.ai/
 
 ```mermaid
 graph TD
-    A[Frontend (HTML/CSS/JS)] --> B[Flask Backend]
+    A[Frontend HTML/CSS/JS ] --> B[Flask Backend]
     B --> C[MySQL Database]
     B --> D[Google Gemini API]
 ```
