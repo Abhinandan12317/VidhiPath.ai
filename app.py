@@ -19,8 +19,8 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 #from env
-email_address = os.getnev("EMAIL_HOST_NAME")
-email_password = os.gentve("'vqey jgeg mcke onxi'")
+email_address = os.getenv("EMAIL_HOST_NAME")
+email_password = os.getenv("'vqey jgeg mcke onxi'")
 
 # For OTP storage (in-memory for demo; use DB for production)
 otp_store = {}
@@ -30,7 +30,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-app.secret_key = secrets.token_hex(16)
+#for secret key loaded from env
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
+
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
