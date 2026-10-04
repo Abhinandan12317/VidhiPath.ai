@@ -1,80 +1,241 @@
-# VidhiPath.ai
+<div align="center">
 
-A Flask-based legal assistant for Indian law. Features document upload, AI-powered legal Q&A, user authentication, and more.
+# ⚖️ VidhiPath.ai
 
+### AI-powered legal assistant for Indian law
 
-## Setup
+Get instant legal guidance, document validation, case outcome prediction and case summaries — in plain English.
 
-1. Install Python 3.8+.
-2. Create a virtual environment:
-   ```
-   python -m venv venv
-   ```
-3. Activate the environment:
-   - Windows:
-     ```
-     venv\Scripts\activate
-     ```
-   - Mac/Linux:
-     ```
-     source venv/bin/activate
-     ```
-4. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-5. Add your Gemini API key to a `.env` file:
-   ```
-   GEMINI_API_KEY=your_actual_api_key_here
-   ```
+![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-Backend-000000?logo=flask&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-Database-4479A1?logo=mysql&logoColor=white)
+![Gemini](https://img.shields.io/badge/Google%20Gemini-AI-8E75B2?logo=googlegemini&logoColor=white)
+![IEEE](https://img.shields.io/badge/IEEE%20Computer%20Society-IamPro%202025-00629B)
 
-## MySQL Database Setup
+</div>
 
-1. Install MySQL Server and create a database (e.g., `mera_vidhi`).
-2. Create a user and grant privileges:
-   ```sql
-   CREATE USER 'youruser'@'localhost' IDENTIFIED BY 'yourpassword';
-   GRANT ALL PRIVILEGES ON mera_vidhi.* TO 'youruser'@'localhost';
-   FLUSH PRIVILEGES;
-   ```
-3. Update your database connection settings in `database.py` or your `.env` file:
-   ```
-   DB_HOST=localhost
-   DB_USER=youruser
-   DB_PASSWORD=yourpassword
-   DB_NAME=mera_vidhi
-   ```
+---
 
-## Supabase Setup
+## 📌 Table of Contents
 
-1. Go to [supabase.com](https://supabase.com/) and create a project.
-2. Get your Supabase URL and API key from the project settings.
-3. Add them to your `.env` file:
-   ```
-   SUPABASE_URL=your_supabase_url
-   SUPABASE_KEY=your_supabase_api_key
-   ```
-4. Run migrations if needed:
-   - Place your migration SQL files in `supabase/migrations/`.
-   - Use Supabase CLI or dashboard to apply migrations.
+- [About](#-about)
+- [Features](#-features)
+- [Screenshots](#-screenshots)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Getting Started](#-getting-started)
+- [Environment Variables](#-environment-variables)
+- [Internship & Credentials](#-internship--credentials)
+- [Author](#-author)
+- [Disclaimer](#%EF%B8%8F-disclaimer)
 
-## Running the App
+---
+
+## 📖 About
+
+**VidhiPath.ai** (*Vidhi* = law, *Path* = way) is a Flask-based legal technology platform that makes Indian legal information easier to access and understand. Users can ask legal questions to an AI assistant, validate legal documents, get AI-assisted case outcome predictions, and turn long legal text into short, readable summaries — all from a single dashboard with saved history.
+
+This project was built as part of the **IamPro – IEEE Computer Society Internship and Mentorship Program 2025**.
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---|---|
+| 💬 **Legal Guidance Chatbot** | Ask legal questions in plain English and get answers grounded in Indian law, powered by the Gemini API. |
+| 📄 **Smart Document Checker** | Upload legal documents (PDF, DOCX, TXT) to check format correctness, missing details and potential issues. |
+| 📈 **Case Prediction Engine** | Enter case type, year of filing, state and description to get predictions on outcome probability, estimated duration and recommended jurisdiction. |
+| 📝 **Case Summary Generator** | Paste text or upload a document and get a clear, easy-to-understand summary. |
+| 📚 **Knowledge Base** | Browse legal FAQs and resources. |
+| 🔖 **Saved Content** | Revisit chat history, validated documents and case analyses in one place. |
+| 📊 **Personal Dashboard** | Quick stats (conversations, documents checked, case analyses), quick actions and usage tips. |
+| 🔐 **Authentication & Roles** | Sign up / login, role-based access and an admin panel, backed by MySQL. |
+| 🔑 **Forgot Password with OTP** | Email-based 6-digit OTP verification followed by a secure password reset. |
+
+---
+
+## 🖼️ Screenshots
+
+### Landing page
+
+![Landing page](screenshots/01-landing-hero.png)
+
+| Platform features | Why choose VidhiPath.ai |
+|---|---|
+| ![Platform features](screenshots/02-platform-features.png) | ![Why choose VidhiPath.ai](screenshots/03-why-choose-vidhipath.png) |
+
+### Authentication
+
+![Login](screenshots/04-login.png)
+
+### Dashboard
+
+![Dashboard](screenshots/05-dashboard.png)
+
+| Quick actions | Recent activity & tips |
+|---|---|
+| ![Quick actions](screenshots/06-dashboard-quick-actions.png) | ![Recent activity and tips](screenshots/07-dashboard-activity-and-tips.png) |
+
+### Legal Guidance Chatbot
+
+![Legal chatbot](screenshots/09-legal-chatbot.png)
+
+![Legal chatbot answer](screenshots/08-legal-chatbot-answer.png)
+
+### Case Prediction Engine
+
+![Case prediction](screenshots/10-case-prediction.png)
+
+### Case Summary Generator
+
+![Case summary generator](screenshots/11-case-summary-generator.png)
+
+### Saved Content
+
+![Saved content](screenshots/12-saved-content.png)
+
+### Password Recovery (OTP flow)
+
+| 1. Forgot password | 2. Verify OTP | 3. Reset password |
+|---|---|---|
+| ![Forgot password](screenshots/13-forgot-password.png) | ![OTP verification](screenshots/14-otp-verification.png) | ![Reset password](screenshots/15-reset-password.png) |
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Backend** | Python, Flask |
+| **AI / LLM** | Google Gemini API |
+| **Database** | MySQL |
+| **Frontend** | HTML, CSS, JavaScript (Jinja2 templates) |
+| **Auth** | Session-based login with roles, email OTP for password reset |
+
+---
+
+## 📁 Project Structure
+
+> Adjust this to match your repository layout.
 
 ```
+VidhiPath.ai/
+├── app.py                  # Flask application entry point
+├── templates/              # HTML templates
+├── static/                 # CSS, JS, images
+├── screenshots/            # README screenshots
+├── certificate.jpg         # Internship completion certificate
+├── requirements.txt
+├── .env.example
+└── README.md
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Python 3.9+
+- MySQL Server
+- A Google Gemini API key
+- An email account / SMTP credentials (for OTP emails)
+
+### Installation
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Abhinandan12317/VidhiPath.ai.git
+cd VidhiPath.ai
+
+# 2. Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Set up the database
+#    Create a MySQL database and update your .env file (see below)
+
+# 5. Run the app
 python app.py
 ```
 
-## Features
+The app runs at **http://127.0.0.1:5000**
 
-- AI-powered legal Q&A (Gemini API)
-- Document upload and processing
-- User authentication (login, registration, password reset)
-- Email OTP for password reset
+---
 
-## Configuration
+## 🔧 Environment Variables
 
-Set your environment variables for email and Gemini API keys in `.env` or directly in your code.
+Create a `.env` file in the project root. **Never commit this file** — add it to `.gitignore`.
 
-## License
+```env
+GEMINI_API_KEY=your_gemini_api_key
+SECRET_KEY=your_flask_secret_key
 
-MIT
+DB_HOST=localhost
+DB_USER=your_db_user
+DB_PASSWORD=your_db_password
+DB_NAME=vidhipath
+
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your_email@example.com
+MAIL_PASSWORD=your_app_password
+```
+
+---
+
+## 🎓 Internship & Credentials
+
+This project was developed during the:
+
+### **IamPro – IEEE Computer Society Internship and Mentorship Program 2025**
+
+| | |
+|---|---|
+| **Program** | IamPro – IEEE Computer Society Internship and Mentorship Program |
+| **Organised by** | IEEE Computer Society |
+| **Year** | 2025 |
+| **Intern** | Abhinandan |
+| **Project** | VidhiPath.ai — AI-powered Legal Assistant for Indian Law |
+| **Certificate ID** | `<add your certificate ID here>` |
+
+### 📜 Internship Completion Certificate
+
+<div align="center">
+
+![IamPro IEEE Computer Society Internship Completion Certificate](certificate.png)
+
+</div>
+
+---
+
+## 👨‍💻 Author
+
+**Abhinandan**
+Final-year Computer Science & Engineering student, ATME College of Engineering, Mysore
+Team **Double.exe**
+
+| | |
+|---|---|
+| **GitHub** | [@Abhinandan12317](https://github.com/Abhinandan12317) |
+| **LinkedIn** | `<add your LinkedIn URL>` |
+| **Email** | `<add your email>` |
+| **Live demo** | `<add link if deployed>` |
+
+---
+
+## ⚠️ Disclaimer
+
+VidhiPath.ai provides AI-generated information for **educational and informational purposes only**. It is **not a substitute for professional legal advice**. Case predictions are estimates and should not be relied upon for legal decisions. Always consult a qualified legal professional.
+
+---
+
+<div align="center">
+
+⭐ If you found this project useful, consider giving it a star!
+
+</div>
