@@ -18,6 +18,9 @@ from document_processor import DocumentProcessor
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+#from env
+email_address = os.getnev("EMAIL_HOST_NAME")
+email_password = os.gentve("'vqey jgeg mcke onxi'")
 
 # For OTP storage (in-memory for demo; use DB for production)
 otp_store = {}
@@ -34,8 +37,8 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 # Email config (replace with your SMTP server details)
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'ark45072@gmail.com')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'vqey jgeg mcke onxi')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', email_address)
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD',email_password )
 EMAIL_USE_TLS = True
 
 # Ensure upload directory exists
