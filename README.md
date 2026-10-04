@@ -202,7 +202,7 @@ This project was developed during the:
 | **Year** | 2025 |
 | **Intern** | Abhinandan |
 | **Project** | VidhiPath.ai — AI-powered Legal Assistant for Indian Law |
-| **Certificate ID** | `<add your certificate ID here>` |
+| **Certificate ID** | ------NA------ |
 
 ### 📜 Internship Completion Certificate
 
@@ -223,9 +223,9 @@ Team **Double.exe**
 | | |
 |---|---|
 | **GitHub** | [@Abhinandan12317](https://github.com/Abhinandan12317) |
-| **LinkedIn** | `<add your LinkedIn URL>` |
-| **Email** | `<add your email>` |
-| **Live demo** | `<add link if deployed>` |
+| **LinkedIn** | https://www.linkedin.com/in/abhinandan-rk-899100290/ |
+| **Email** | ark45072@gmail.com |
+| **Live demo** | Not deployed |
 
 ---
 
