@@ -3,16 +3,22 @@ from mysql.connector import Error
 import logging
 from datetime import datetime
 import json
+import os
+
+DB_HOST = os.getenv("DB_HOST")
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 logger = logging.getLogger(__name__)
 
 class DatabaseManager:
     def __init__(self):
         self.config = {
-            'host': 'localhost',
-            'database': 'vidhipath_db',
-            'user': 'koot',
-            'password': 'root',
+            'host': DB_HOST,
+            'database': DB_NAME,
+            'user': DB_USER,
+            'password': DB_PASSWORD,
             'charset': 'utf8mb4',
             'collation': 'utf8mb4_unicode_ci'
         }
