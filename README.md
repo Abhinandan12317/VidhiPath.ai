@@ -123,13 +123,30 @@ This project was built as part of the **IamPro – IEEE Computer Society Interns
 ```
 VidhiPath.ai/
 ├── app.py                  # Flask application entry point
+├── ai_service.py           # AI integration services
+├── auth.py                 # Authentication utilities
+├── database.py             # Database manager
+├── document_processor.py   # Document processing utilities
 ├── templates/              # HTML templates
 ├── static/                 # CSS, JS, images
 ├── screenshots/            # README screenshots
-├── certificate.jpg         # Internship completion certificate
+├── certificate.png         # Internship completion certificate
 ├── requirements.txt
 ├── .env.example
 └── README.md
+```
+
+---
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+graph TD
+    A[Frontend (HTML/CSS/JS)] --> B[Flask Backend]
+    B --> C[MySQL Database]
+    B --> D[Google Gemini API]
 ```
 
 ---
@@ -202,7 +219,7 @@ This project was developed during the:
 | **Year** | 2025 |
 | **Intern** | Abhinandan |
 | **Project** | VidhiPath.ai — AI-powered Legal Assistant for Indian Law |
-| **Certificate ID** | ------NA------ |
+
 
 ### 📜 Internship Completion Certificate
 
@@ -223,9 +240,9 @@ Team **Double.exe**
 | | |
 |---|---|
 | **GitHub** | [@Abhinandan12317](https://github.com/Abhinandan12317) |
-| **LinkedIn** | https://www.linkedin.com/in/abhinandan-rk-899100290/ |
-| **Email** | ark45072@gmail.com |
-| **Live demo** | Not deployed |
+
+
+
 
 ---
 
